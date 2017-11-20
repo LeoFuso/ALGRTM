@@ -20,21 +20,23 @@ typedef struct {
 } Path;
 
 void print_paths(Path *p, int path_size);
+
 void print_nodes(struct Node *n, int nodes_qtd);
+
 int compare(const void *s1, const void *s2);
+
 void setup(struct Node *original_nodes, struct Node *kruskal_nodes, int nodes_qtd);
 
 
 void kruskal(Path *original_path, int original_path_size, Path *kruskal_path, int kruskal_path_size,
              struct Node *original_nodes, struct Node *kruskal_nodes, int nodes_qtd);
 
-int check_parent(struct Node node_1, struct Node node_2);
-int check_children(struct Node node_1, struct Node node_2);
+int check_children(struct Node from_node, struct Node node, char *to_find);
 
 int main(void) {
 
-    int nodes_qtd = 5;
-    int original_path_size = 10;
+    int nodes_qtd = 4;
+    int original_path_size = 5;
     int kruskal_path_size = nodes_qtd - 1;
 
     Path *original_path = malloc(original_path_size * sizeof(Path));
@@ -44,7 +46,7 @@ int main(void) {
     struct Node *kruskal_nodes = malloc(nodes_qtd * sizeof(struct Node));
 
 
-    mount_paths_nodes_2(original_path, original_nodes, nodes_qtd);
+    mount_paths_nodes(original_path, original_nodes, nodes_qtd);
 
 
     printf("\n\nORIGINAL NODES:\n");
@@ -60,7 +62,7 @@ int main(void) {
 
     print_paths(original_path, original_path_size);
 
-    setup(original_nodes,kruskal_nodes, nodes_qtd);
+    setup(original_nodes, kruskal_nodes, nodes_qtd);
 
     kruskal(original_path, original_path_size, kruskal_path, kruskal_path_size, original_nodes, kruskal_nodes,
             nodes_qtd);
@@ -106,7 +108,7 @@ void kruskal(Path *original_path, int original_path_size, Path *kruskal_path, in
                 to_node = j;
                 to_is_set = 1;
             }
-            if(from_is_set == 1 && to_is_set == 1){
+            if (from_is_set == 1 && to_is_set == 1) {
                 j = nodes_qtd;
                 from_is_set = to_is_set = 0;
             }
@@ -117,96 +119,45 @@ void kruskal(Path *original_path, int original_path_size, Path *kruskal_path, in
         struct Node s_from_node = kruskal_nodes[from_node];
         struct Node s_to_node = kruskal_nodes[to_node];
 
-        if (check_parent(s_from_node,s_to_node) == 0 &&
-                check_children(s_from_node,s_to_node) == 0) {
 
-                kruskal_path[kruskal_path_control++] = i_path;
-                kruskal_nodes[from_node].parents[kruskal_nodes[from_node].last_parent++] = kruskal_nodes[to_node];
-                kruskal_nodes[to_node].children[kruskal_nodes[to_node].last_children++] = kruskal_nodes[from_node];
-
+        if (check_children(s_from_node,s_from_node, s_to_node.name) == 0) {
+            kruskal_path[kruskal_path_control++] = i_path;
+            kruskal_nodes[from_node].parents[kruskal_nodes[from_node].last_parent++] = kruskal_nodes[to_node];
+            kruskal_nodes[to_node].children[kruskal_nodes[to_node].last_children++] = kruskal_nodes[from_node];
         }
 
-        if(kruskal_path_control > kruskal_path_size)
+        if (kruskal_path_control > kruskal_path_size)
             i = original_path_size;
 
     }
 }
 
-int check_parent(struct Node node_1, struct Node node_2) {
-    int i;
+int check_children(struct Node from_node, struct Node node, char *to_find) {
+
     int j;
+    int result = 0;
 
-    if(node_1.last_parent == 0 && node_2.last_parent == 0)
-        return 0;
+    if (strcmp(node.name, to_find) == 0)
+        return 1;
 
-    if(node_1.last_parent == 0){
-        for (j = 0; j < node_2.last_parent ; ++j) {
-            if(strcmp(node_1.name, node_2.parents[j].name) == 0){
-                return 1;
-            }else{
-                check_parent(node_1, node_2.parents[j]);
-            }
+    for (j = 0; j < node.last_parent; ++j) {
+        if (!strcmp(from_node.name, node.parents[j].name) == 0) {
+            result += check_children(node, node.parents[j], to_find);
         }
     }
 
-    if(node_2.last_parent == 0){
-        for (j = 0; j < node_1.last_parent ; ++j) {
-            if(strcmp(node_1.parents[j].name, node_2.name) == 0){
-                return 1;
-            }else{
-                check_parent(node_2, node_1.parents[j]);
-            }
+    if (result > 0)
+        return 1;
+
+    for (j = 0; j < node.last_children; ++j) {
+        if (!strcmp(from_node.name, node.children[j].name) == 0){
+            result += check_children(node, node.children[j], to_find);
         }
     }
 
-    for (i = 0; i < node_1.last_parent ; ++i) {
-        for (j = 0; j < node_2.last_parent ; ++j) {
-            if(strcmp(node_1.parents[i].name, node_2.parents[j].name) == 0){
-                return 1;
-            }else{
-                check_parent(node_1.parents[i], node_2.parents[j]);
-            }
-        }
-    }
-    return 0;
-}
+    if (result > 0)
+        return 1;
 
-int check_children(struct Node node_1, struct Node node_2) {
-    int i;
-    int j;
-
-    if(node_1.last_children == 0 && node_2.last_children == 0)
-        return 0;
-
-    if(node_1.last_children == 0){
-        for (j = 0; j < node_2.last_children ; ++j) {
-            if(strcmp(node_1.name, node_2.children[j].name) == 0){
-                return 1;
-            }else{
-                check_children(node_1, node_2.children[j]);
-            }
-        }
-    }
-
-    if(node_2.last_children == 0){
-        for (j = 0; j < node_1.last_children ; ++j) {
-            if(strcmp(node_1.children[j].name, node_2.name) == 0){
-                return 1;
-            }else{
-                check_children(node_2, node_1.children[j]);
-            }
-        }
-    }
-
-    for (i = 0; i < node_1.last_children ; ++i) {
-        for (j = 0; j < node_2.last_children ; ++j) {
-            if(strcmp(node_1.children[i].name, node_2.children[j].name) == 0){
-                return 1;
-            }else{
-                check_children(node_1.children[i], node_2.children[j]);
-            }
-        }
-    }
     return 0;
 }
 
@@ -416,7 +367,8 @@ int compare(const void *s1, const void *s2) {
         return p1->distance - p2->distance;
     }
 }
-void setup(struct Node *original_nodes, struct Node *kruskal_nodes, int nodes_qtd){
+
+void setup(struct Node *original_nodes, struct Node *kruskal_nodes, int nodes_qtd) {
     int k;
 
     for (k = 0; k < nodes_qtd; ++k) {
