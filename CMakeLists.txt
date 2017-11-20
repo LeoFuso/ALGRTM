@@ -3,5 +3,5 @@ project(ALGRTM)
 
 set(CMAKE_C_STANDARD 11)
 
-set(SOURCE_FILES main.c)
+set(SOURCE_FILES insertion_sort.c)
 add_executable(ALGRTM ${SOURCE_FILES})
