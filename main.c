@@ -19,14 +19,20 @@ int main(void) {
 
     int graph_size = 5;
 
-    Path *p = malloc(graph_size * sizeof(Path));
-    mount_paths(p);
+    Path *original_path = malloc(graph_size * sizeof(Path));
+    Path *kruskal_path = malloc(graph_size * sizeof(Path));
+
+    mount_paths(original_path);
 
     printf("\n\nGraph:\n");
-    print_graph(p, graph_size);
-    qsort(p, graph_size, sizeof(Path), compare);
+    print_graph(original_path, graph_size);
+
+
+    qsort(original_path, graph_size, sizeof(Path), compare);
+
     printf("\n\nSorted Graph:\n");
-    print_graph(p, graph_size);
+    print_graph(original_path, graph_size);
+
     return 0;
 }
 
