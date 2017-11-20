@@ -4,8 +4,8 @@
 
 struct Node {
     char name[2];
-    int last;
-    struct Node *nodes;
+    int last_parent;
+    struct Node *parents;
 };
 
 typedef struct {
@@ -15,15 +15,15 @@ typedef struct {
 } Path;
 
 void print_paths(Path *p, int path_size);
-
 void print_nodes(struct Node *n, int nodes_qtd);
-
 int compare(const void *s1, const void *s2);
+void setup(struct Node *original_nodes, struct Node *kruskal_nodes, int nodes_qtd);
+
 
 void kruskal(Path *original_path, int original_path_size, Path *kruskal_path, int kruskal_path_size,
              struct Node *original_nodes, struct Node *kruskal_nodes, int nodes_qtd);
 
-char *check_parent(struct Node node, struct Node *kruskal_nodes, int qtd_nodes);
+int check_parent(struct Node node_1, struct Node node_2, struct Node *kruskal_nodes);
 
 int main(void) {
 
@@ -51,122 +51,165 @@ int main(void) {
     qsort(original_path, original_path_size, sizeof(Path), compare);
 
     printf("\n\nSORTED PATH:\n");
-    print_paths(original_path, original_path_size);
-    printf("FIM");
 
+    print_paths(original_path, original_path_size);
+
+    setup(original_nodes,kruskal_nodes, nodes_qtd);
 
     kruskal(original_path, original_path_size, kruskal_path, kruskal_path_size, original_nodes, kruskal_nodes,
             nodes_qtd);
 
-    printf("\n\nTESTE:\n");
+    printf("\n\nKRUSKAL NODES:\n");
     print_nodes(kruskal_nodes, nodes_qtd);
+
+    printf("\n\nKRUSKAL PATH:\n");
+    print_paths(kruskal_path, kruskal_path_size);
 
     return 0;
 }
+
 
 void kruskal(Path *original_path, int original_path_size, Path *kruskal_path, int kruskal_path_size,
              struct Node *original_nodes, struct Node *kruskal_nodes, int nodes_qtd) {
     int i;
     int j;
-    int k;
     Path i_path;
+    struct Node j_node;
     int from_node;
     int to_node;
 
+    int from_is_set = 0;
+    int to_is_set = 0;
 
     int kruskal_path_control = 0;
-    //Make a copy
-    for (k = 0; k < nodes_qtd; ++k) {
-        strcpy(kruskal_nodes[k].name, original_nodes[k].name);
-        kruskal_nodes[k].nodes = malloc((nodes_qtd - 1) * sizeof(struct Node));
-    }
 
     for (i = 0; i < original_path_size; ++i) {
+
+        printf("\n\nITERATION %d:", i+1);
+        print_nodes(kruskal_nodes, nodes_qtd);
 
         i_path = original_path[i];
 
         for (j = 0; j < nodes_qtd; ++j) {
 
-            if (strcmp(kruskal_nodes[j].name, i_path.node_a.name) == 0) {
+            j_node = kruskal_nodes[j];
+
+            if (strcmp(j_node.name, i_path.node_a.name) == 0) {
                 from_node = j;
-
+                from_is_set = 1;
             }
 
-            if (strcmp(kruskal_nodes[j].name, i_path.node_b.name) == 0) {
+            if (strcmp(j_node.name, i_path.node_b.name) == 0) {
                 to_node = j;
+                to_is_set = 1;
+            }
+            if(from_is_set == 1 && to_is_set == 1){
+                j = nodes_qtd;
+                from_is_set = to_is_set = 0;
             }
         }
 
-        if (check_parent(kruskal_nodes[to_node], kruskal_nodes, nodes_qtd) == NULL) {
-            //n1 is father;
-            if (check_parent(kruskal_nodes[from_node], kruskal_nodes, nodes_qtd) == NULL) {
-                //isolated pair
+        j = 0;
+
+        struct Node s_from_node = kruskal_nodes[from_node];
+        struct Node s_to_node = kruskal_nodes[to_node];
+
+        if (check_parent(s_from_node,s_to_node, kruskal_nodes) == 0) {
+
                 kruskal_path[kruskal_path_control++] = i_path;
-                kruskal_nodes[from_node].nodes[kruskal_nodes[from_node].last++] = kruskal_nodes[to_node];
-            }
-        } else {
-            printf("FIM");
-            i = original_path_size;
+                kruskal_nodes[from_node].parents[kruskal_nodes[from_node].last_parent++] = kruskal_nodes[to_node];
+
         }
 
+        if(kruskal_path_control > kruskal_path_size)
+            i = original_path_size;
+
     }
 }
 
-char *check_parent(struct Node node, struct Node *kruskal_nodes, int qtd_nodes) {
+int check_parent(struct Node node_1, struct Node node_2, struct Node *kruskal_nodes) {
     int i;
-    if (node.last == 0) {
+    int j;
 
-        return NULL;
+    if(node_1.last_parent == 0 && node_2.last_parent == 0)
+        return 0;
+
+    if(node_1.last_parent == 0){
+        for (j = 0; j < node_2.last_parent ; ++j) {
+            if(strcmp(node_1.name, node_2.parents[j].name) == 0){
+                return 1;
+            }else{
+                return check_parent(node_1, node_2.parents[j], kruskal_nodes);
+            }
+        }
     }
-    for (i = 0; i < node.last; i++) {
-        check_parent(kruskal_nodes[i], kruskal_nodes, qtd_nodes);
+
+    if(node_2.last_parent == 0){
+        for (j = 0; j < node_1.last_parent ; ++j) {
+            if(strcmp(node_1.parents[j].name, node_2.name) == 0){
+                return 1;
+            }else{
+                return check_parent(node_2, node_1.parents[j], kruskal_nodes);
+            }
+        }
     }
+
+    for (i = 0; i < node_1.last_parent ; ++i) {
+        for (j = 0; j < node_2.last_parent ; ++j) {
+            if(strcmp(node_1.parents[i].name, node_2.parents[j].name) == 0){
+                return 1;
+            }else{
+                return check_parent(node_1.parents[i], node_2.parents[j], kruskal_nodes);
+            }
+        }
+    }
+    return 0;
 }
-
 
 void mount_paths_nodes(Path *p, struct Node *n, int nodes_qtd) {
 
     strcpy(n[0].name, "A");
-    n[0].nodes = malloc((nodes_qtd - 1) * sizeof(struct Node));
+    n[0].parents = malloc((nodes_qtd - 1) * sizeof(struct Node));
 
     strcpy(n[1].name, "B");
-    n[1].nodes = malloc((nodes_qtd - 1) * sizeof(struct Node));
+    n[1].parents = malloc((nodes_qtd - 1) * sizeof(struct Node));
 
     strcpy(n[2].name, "C");
-    n[2].nodes = malloc((nodes_qtd - 1) * sizeof(struct Node));
+    n[2].parents = malloc((nodes_qtd - 1) * sizeof(struct Node));
 
     strcpy(n[3].name, "D");
-    n[3].nodes = malloc((nodes_qtd - 1) * sizeof(struct Node));
+    n[3].parents = malloc((nodes_qtd - 1) * sizeof(struct Node));
 
-    //A -> B = 25
+    //B --> A = 25
     p[0].distance = 25;
-    p[0].node_a = n[0];
-    p[0].node_b = n[1];
-    n[0].nodes[n[0].last++] = n[1];
+    p[0].node_a = n[1];
+    p[0].node_b = n[0];
+    n[1].parents[n[1].last_parent++] = n[0];
 
-    //B -> C = 50
+    //C --> B = 50
     p[1].distance = 50;
-    p[1].node_a = n[1];
-    p[1].node_b = n[2];
-    n[1].nodes[n[1].last++] = n[2];
+    p[1].node_a = n[2];
+    p[1].node_b = n[1];
+    n[2].parents[n[2].last_parent++] = n[1];
 
-    //C -> D = 10
+    //D --> C = 10
     p[2].distance = 10;
-    p[2].node_a = n[2];
-    p[2].node_b = n[3];
-    n[2].nodes[n[2].last++] = n[3];
+    p[2].node_a = n[3];
+    p[2].node_b = n[2];
+    n[3].parents[n[3].last_parent++] = n[2];
 
-    //A -> D = 25
+
+    //D --> A = 25
     p[3].distance = 25;
-    p[3].node_a = n[0];
-    p[3].node_b = n[3];
-    n[0].nodes[n[0].last++] = n[3];
+    p[3].node_a = n[3];
+    p[3].node_b = n[0];
+    n[3].parents[n[3].last_parent++] = n[0];
 
-    //A -> C = 40
+    //C --> A = 40
     p[4].distance = 40;
-    p[4].node_a = n[0];
-    p[4].node_b = n[2];
-    n[0].nodes[n[0].last++] = n[2];
+    p[4].node_a = n[2];
+    p[4].node_b = n[0];
+    n[2].parents[n[2].last_parent++] = n[0];
 }
 
 void print_nodes(struct Node *n, int nodes_qtd) {
@@ -176,8 +219,8 @@ void print_nodes(struct Node *n, int nodes_qtd) {
 
         printf("\n--%s", n[i].name);
 
-        for (j = 0; j < n[i].last; ++j) {
-            printf("\n  |__%s", n[i].nodes[j].name);
+        for (j = 0; j < n[i].last_parent; ++j) {
+            printf("\n  |__%s", n[i].parents[j].name);
         }
         printf("\n\n");
     }
@@ -186,7 +229,7 @@ void print_nodes(struct Node *n, int nodes_qtd) {
 void print_paths(Path *p, int path_size) {
     int i;
     for (i = 0; i < path_size; ++i) {
-        printf("\n%s -> %s = %d", p[i].node_a.name, p[i].node_b.name, p[i].distance);
+        printf("\n%s --> %s = %d", p[i].node_a.name, p[i].node_b.name, p[i].distance);
     }
     printf("\n\n");
 }
@@ -204,4 +247,13 @@ int compare(const void *s1, const void *s2) {
     } else {
         return p1->distance - p2->distance;
     }
+}
+void setup(struct Node *original_nodes, struct Node *kruskal_nodes, int nodes_qtd){
+    int k;
+
+    for (k = 0; k < nodes_qtd; ++k) {
+        strcpy(kruskal_nodes[k].name, original_nodes[k].name);
+        kruskal_nodes[k].parents = malloc((nodes_qtd - 1) * sizeof(struct Node));
+    }
+
 }
