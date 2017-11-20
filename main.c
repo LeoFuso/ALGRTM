@@ -1,11 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct {
+typedef struct path {
     char point_a[2];
     char point_b[2];
     int distance;
 } Path;
+
+typedef struct {
+    char father[2];
+    struct Path *path;
+} Tree;
 
 void mount_paths(Path *p);
 
@@ -15,12 +20,18 @@ void sort_graph(Path *p, int size);
 
 int compare(const void *s1, const void *s2);
 
+void kruskal(Path *p, Tree *t, int size);
+
+void add_to(Path p, Tree *t, int size);
+
 int main(void) {
 
     int graph_size = 5;
 
     Path *original_path = malloc(graph_size * sizeof(Path));
     Path *kruskal_path = malloc(graph_size * sizeof(Path));
+    Tree *trees = malloc(graph_size * sizeof(Tree));
+
 
     mount_paths(original_path);
 
@@ -33,7 +44,53 @@ int main(void) {
     printf("\n\nSorted Graph:\n");
     print_graph(original_path, graph_size);
 
+    kruskal(original_path, trees, graph_size);
+
     return 0;
+}
+
+void kruskal(Path *p, Tree *t, int size) {
+    int i;
+
+    for (i = 0; i < size; ++i) {
+        strcpy(t[i].father, "00");
+    }
+
+    i = 0;
+
+    for (i = 0; i < size; ++i) {
+
+        add_to(p[i], t, size);
+
+    }
+
+}
+
+void add_to(Path p, Tree *t, int size) {
+    int i;
+    int current;
+    Tree to_check;
+    for (i = 0; i < size; ++i) {
+
+        if (strcmp(t[i].father, "00") == 0) {
+            t[i].father = p.point_b;
+            t[i].path = p;
+            to_check = t[i];
+            current = i;
+            i = size;
+
+            printf("\n\nadd_to:\n");
+        }
+    }
+
+    verify_tree(to_check,t, size);
+}
+
+int verify_tree(Tree to_check,  Tree *t, int size){
+    int i;
+    for (i = 0; i < size; ++i) {
+        //??????????????????????????????????????
+    }
 }
 
 
