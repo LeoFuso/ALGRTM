@@ -28,8 +28,8 @@ void setup(struct Node *original_nodes, struct Node *kruskal_nodes, int nodes_qt
 void kruskal(Path *original_path, int original_path_size, Path *kruskal_path, int kruskal_path_size,
              struct Node *original_nodes, struct Node *kruskal_nodes, int nodes_qtd);
 
-int check_parent(struct Node node_1, struct Node node_2, struct Node *kruskal_nodes);
-int check_children(struct Node node_1, struct Node node_2, struct Node *kruskal_nodes);
+int check_parent(struct Node node_1, struct Node node_2);
+int check_children(struct Node node_1, struct Node node_2);
 
 int main(void) {
 
@@ -117,8 +117,8 @@ void kruskal(Path *original_path, int original_path_size, Path *kruskal_path, in
         struct Node s_from_node = kruskal_nodes[from_node];
         struct Node s_to_node = kruskal_nodes[to_node];
 
-        if (check_parent(s_from_node,s_to_node, kruskal_nodes) == 0 &&
-                check_children(s_from_node,s_to_node, kruskal_nodes) == 0) {
+        if (check_parent(s_from_node,s_to_node) == 0 &&
+                check_children(s_from_node,s_to_node) == 0) {
 
                 kruskal_path[kruskal_path_control++] = i_path;
                 kruskal_nodes[from_node].parents[kruskal_nodes[from_node].last_parent++] = kruskal_nodes[to_node];
@@ -132,7 +132,7 @@ void kruskal(Path *original_path, int original_path_size, Path *kruskal_path, in
     }
 }
 
-int check_parent(struct Node node_1, struct Node node_2, struct Node *kruskal_nodes) {
+int check_parent(struct Node node_1, struct Node node_2) {
     int i;
     int j;
 
@@ -144,7 +144,7 @@ int check_parent(struct Node node_1, struct Node node_2, struct Node *kruskal_no
             if(strcmp(node_1.name, node_2.parents[j].name) == 0){
                 return 1;
             }else{
-                check_parent(node_1, node_2.parents[j], kruskal_nodes);
+                check_parent(node_1, node_2.parents[j]);
             }
         }
     }
@@ -154,7 +154,7 @@ int check_parent(struct Node node_1, struct Node node_2, struct Node *kruskal_no
             if(strcmp(node_1.parents[j].name, node_2.name) == 0){
                 return 1;
             }else{
-                check_parent(node_2, node_1.parents[j], kruskal_nodes);
+                check_parent(node_2, node_1.parents[j]);
             }
         }
     }
@@ -164,14 +164,14 @@ int check_parent(struct Node node_1, struct Node node_2, struct Node *kruskal_no
             if(strcmp(node_1.parents[i].name, node_2.parents[j].name) == 0){
                 return 1;
             }else{
-                check_parent(node_1.parents[i], node_2.parents[j], kruskal_nodes);
+                check_parent(node_1.parents[i], node_2.parents[j]);
             }
         }
     }
     return 0;
 }
 
-int check_children(struct Node node_1, struct Node node_2, struct Node *kruskal_nodes) {
+int check_children(struct Node node_1, struct Node node_2) {
     int i;
     int j;
 
@@ -183,7 +183,7 @@ int check_children(struct Node node_1, struct Node node_2, struct Node *kruskal_
             if(strcmp(node_1.name, node_2.children[j].name) == 0){
                 return 1;
             }else{
-                check_parent(node_1, node_2.children[j], kruskal_nodes);
+                check_children(node_1, node_2.children[j]);
             }
         }
     }
@@ -193,7 +193,7 @@ int check_children(struct Node node_1, struct Node node_2, struct Node *kruskal_
             if(strcmp(node_1.children[j].name, node_2.name) == 0){
                 return 1;
             }else{
-                check_parent(node_2, node_1.children[j], kruskal_nodes);
+                check_children(node_2, node_1.children[j]);
             }
         }
     }
@@ -203,7 +203,7 @@ int check_children(struct Node node_1, struct Node node_2, struct Node *kruskal_
             if(strcmp(node_1.children[i].name, node_2.children[j].name) == 0){
                 return 1;
             }else{
-                check_parent(node_1.children[i], node_2.children[j], kruskal_nodes);
+                check_children(node_1.children[i], node_2.children[j]);
             }
         }
     }
