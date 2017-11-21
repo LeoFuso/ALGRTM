@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+//Leonardo Fuso  21/11/2017
+
 struct Node {
     char name[3];
     struct Node *parent;
@@ -19,38 +21,34 @@ struct Graph {
     struct Node **node;
 };
 
-
+/* get_struct functions */
 struct Graph *create_graph(int n_path, int n_node);
-
 struct Path *create_path(struct Node *node_a, struct Node *node_b, int distance);
-
 struct Node *create_node(char *name);
 
-struct Graph **mount_initial_graph_1(void);
-
-struct Graph **mount_initial_graph_2(void);
-
-void _test(struct Graph **(*mount)(void));
-
+/* aux functions */
 int compare(const void *s1, const void *s2);
-
 void print_paths(struct Graph *graph);
-
 void print_nodes(struct Graph *graph);
 
-void setup(struct Graph *o_graph, struct Graph *k_graph);
-
+/* structural functions */
+struct Node *_find_node(struct Graph *graph, char * name);
 void remove_cycle_element(struct Path **path, int index, int n_path);
 
+
+/* main test */
+void _test(struct Graph **(*mount)(void));
+struct Graph **mount_initial_graph_1(void);
+struct Graph **mount_initial_graph_2(void);
+void re_mount_nodes(struct Graph *o_graph, struct Graph *k_graph);
+
+/* logic functions */
+void recursive_kruskal(struct Graph *o_graph, struct Graph *k_graph, int path_to_remove);
 void kruskal(struct Graph *o_graph, struct Graph *k_graph);
-
 int check_graph(struct Path **path, int path_size);
-
 struct Node *_find(struct Node *node);
-
 void _union(struct Node *n_from, struct Node *n_to);
 
-struct Node *_find_node(struct Graph *graph, char * name);
 
 int main(void) {
 
@@ -88,7 +86,7 @@ void _test(struct Graph **(*mount)(void)) {
     printf("\n\nSORTED PATH:\n");
     print_paths(o_graph);
 
-    kruskal(o_graph, k_graph);
+    recursive_kruskal(o_graph, k_graph,-1);
 
     printf("\n\nKRUSKAL GRAPH: \n");
     printf("%d NODES \n", k_graph->n_node);
@@ -108,14 +106,46 @@ struct Node *_find_node(struct Graph *graph, char * name){
      }
 }
 
-void kruskal(struct Graph *o_graph, struct Graph *k_graph) {
+void recursive_kruskal(struct Graph *o_graph, struct Graph *k_graph, int path_to_remove){
 
-    for (int i = 0; i < o_graph->n_node ; ++i) {
-        char copy[3];
-        strcpy(copy,o_graph->node[i]->name);
-        k_graph->node[i] = create_node(copy);
+    if(path_to_remove != -1){
+
+        remove_cycle_element(o_graph->path, path_to_remove, o_graph->n_path);
+
+        struct Path **tmp = realloc(o_graph->path, (o_graph->n_path - 1) * sizeof(struct Path *));
+
+        if (tmp == NULL && o_graph->n_path > 1) {
+
+            /* No memory available */
+            exit(EXIT_FAILURE);
+
+        }
+        o_graph->n_path = o_graph->n_path - 1;
+        o_graph->path = tmp;
+
     }
 
+    re_mount_nodes(o_graph,k_graph);
+
+    for (int j = 0; j < o_graph->n_path; ++j) {
+        struct Node *node_a = _find_node(k_graph, o_graph->path[j]->node_a->name);
+        struct Node *node_b = _find_node(k_graph, o_graph->path[j]->node_b->name);
+        int distance = o_graph->path[j]->distance;
+        k_graph->path[j] = create_path(node_a, node_b, distance);
+    }
+
+    int is_cycle = check_graph(k_graph->path, o_graph->n_path);
+
+    if(is_cycle != -1)
+        recursive_kruskal(o_graph, k_graph, is_cycle);
+
+}
+
+/* looking for a better way of doing this */
+void kruskal(struct Graph *o_graph, struct Graph *k_graph) {
+
+
+    re_mount_nodes(o_graph,k_graph);
 
     for (int j = 0; j < o_graph->n_path; ++j) {
 
@@ -130,6 +160,7 @@ void kruskal(struct Graph *o_graph, struct Graph *k_graph) {
 
     int is_cycle = check_graph(k_graph->path, o_graph->n_path);
 
+    /* this is O(n²) */
     while (is_cycle != 0) {
         is_cycle = _do_loop_kruskal(o_graph, k_graph, is_cycle);
     }
@@ -151,11 +182,7 @@ int _do_loop_kruskal(struct Graph *o_graph, struct Graph *k_graph, int path_to_r
 
     /*starting again */
 
-    for (int i = 0; i < o_graph->n_node ; ++i) {
-        char copy[3];
-        strcpy(copy,o_graph->node[i]->name);
-        k_graph->node[i] = create_node(copy);
-    }
+    re_mount_nodes(o_graph,k_graph);
 
     for (int j = 0; j < o_graph->n_path; ++j) {
         struct Node *node_a = _find_node(k_graph, o_graph->path[j]->node_a->name);
@@ -172,25 +199,17 @@ int check_graph(struct Path **path, int path_size) {
 
     for (int i = 0; i < path_size; ++i) {
 
-        struct Node *x = path[i]->node_a;
-        struct Node *y = path[i]->node_b;
-        char *x_name = x->name;
-        char *y_name = y->name;
-
-        struct Node *x_parent = _find(x);
-        struct Node *y_parent = _find(y);
-
-        char *x_parent_name = x_parent->name;
-        char *y_parent_name = y_parent->name;
+        struct Node *x_parent = _find(path[i]->node_a);
+        struct Node *y_parent = _find(path[i]->node_b);
 
         if (strcmp(x_parent->name, y_parent->name) == 0)
             return i;
 
         _union(x_parent, y_parent);
-        x_parent_name = x->parent;
-        int i = 0;
     }
-    return 0;
+
+    /* but that's a good thing */
+    return -1;
 }
 
 struct Node *_find(struct Node *node) {
@@ -377,8 +396,10 @@ int compare(const void *s1, const void *s2) {
                strcmp(p1->node_b->name, p2->node_b->name);
 }
 
-void setup(struct Graph *o_graph, struct Graph *k_graph) {
-    for (int i = 0; i < o_graph->n_node; ++i) {
-        k_graph->node[i] = create_node(o_graph->node[i]->name);
+void re_mount_nodes(struct Graph *o_graph, struct Graph *k_graph) {
+    for (int i = 0; i < o_graph->n_node ; ++i) {
+        char copy[3];
+        strcpy(copy,o_graph->node[i]->name);
+        k_graph->node[i] = create_node(copy);
     }
 }
