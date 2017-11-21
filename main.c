@@ -23,41 +23,32 @@ struct Graph {
 
 /* get_struct functions */
 struct Graph *create_graph(int n_path, int n_node);
-
 struct Path *create_path(struct Node *node_a, struct Node *node_b, int distance);
-
 struct Node *create_node(char *name);
 
 /* aux functions */
 int compare(const void *s1, const void *s2);
-
 void print_paths(struct Graph *graph);
-
 void print_nodes(struct Graph *graph);
+int get_path_size(struct Graph *graph);
 
 /* structural functions */
 struct Node *_find_node(struct Graph *graph, char *name);
-
 void remove_cycle_element(struct Path **path, int index, int n_path);
 
 
 /* main test */
 void _test(struct Graph **(*mount)(void));
-
 struct Graph **mount_initial_graph_1(void);
-
 struct Graph **mount_initial_graph_2(void);
-
 void re_mount_nodes(struct Graph *o_graph, struct Graph *k_graph);
 
 /* logic functions */
 void kruskal(struct Graph *o_graph, struct Graph *k_graph, int path_to_remove);
-
 int check_graph(struct Path **path, int path_size);
-
 struct Node *_find(struct Node *node);
-
 void _union(struct Node *n_from, struct Node *n_to);
+
 
 
 int main(void) {
@@ -104,9 +95,11 @@ void _test(struct Graph **(*mount)(void)) {
 
     printf("\n\nSHORTEST PATH: \n");
     print_paths(k_graph);
+    printf("PATH DISTANCE SIZE: %d\n", get_path_size(k_graph));
 
     printf("\n\nKRUSKAL TREE: \n");
     print_nodes(k_graph);
+
 }
 
 struct Node *_find_node(struct Graph *graph, char *name) {
@@ -189,19 +182,18 @@ void _union(struct Node *n_from, struct Node *n_to) {
     struct Node *x_set = _find(n_from);
     struct Node *y_set = _find(n_to);
 
-    char *x_name = x_set->name;
-    char *y_name = y_set->name;
-
     x_set->parent = y_set;
 }
 
 struct Graph *create_graph(int n_path, int n_node) {
+
     struct Graph *graph =
             (struct Graph *) malloc(sizeof(struct Graph));
+
     graph->n_path = n_path;
     graph->n_node = n_node;
-    graph->path = (struct Path *) malloc(n_path * sizeof(struct Path));
-    graph->node = (struct Node *) malloc(n_node * sizeof(struct Node));
+    graph->path = (struct Path **) malloc(n_path * sizeof(struct Path));
+    graph->node = (struct Node **) malloc(n_node * sizeof(struct Node));
 }
 
 struct Path *create_path(struct Node *node_a, struct Node *node_b, int distance) {
@@ -348,6 +340,15 @@ void print_paths(struct Graph *graph) {
         printf("\n%s --> %s = %d", p->node_a->name, p->node_b->name, p->distance);
     }
     printf("\n\n");
+}
+
+int get_path_size(struct Graph *graph) {
+    int sum = 0;
+    int i;
+    for (i = 0; i < graph->n_path; ++i) {
+        sum += graph->path[i]->distance;
+    }
+    return sum;
 }
 
 int compare(const void *s1, const void *s2) {
