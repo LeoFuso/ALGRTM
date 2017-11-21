@@ -57,9 +57,9 @@ int main(void) {
 
     printf("\n\nSERA PATH:\n");
 
-    //kruskal(o_graph,k_graph);
+    kruskal(o_graph,k_graph);
+    print_paths(k_graph);
 
-    //print_paths(k_graph);
 
     for (int i = 0; i < 3; ++i) {
         k_graph->path[i] = create_path(o_graph->path[i]->node_a,o_graph->path[i]->node_b,o_graph->path[i]->distance);
@@ -70,26 +70,33 @@ int main(void) {
     else
         printf("K");
 
+    print_paths(k_graph);
+
     return 0;
 }
 
 
 void kruskal(struct Graph *o_graph, struct Graph *k_graph){
+
     int control = 0;
-    for (int i = 0; i < o_graph->n_path ; ++i) {
-        struct Path *o_path = o_graph->path[i];
+    int i = 0;
 
-        if(control > k_graph->n_path)
-            break;
+    while (i < o_graph->n_path){
 
-        k_graph->path[control] = create_path(o_path->node_a,o_path->node_b,o_path->distance);
+        struct Node *node_a = o_graph->path[i]->node_a;
+        struct Node *node_b = o_graph->path[i]->node_b;
+        int distance = o_graph->path[i]->distance;
 
-        if(check_graph(k_graph, control) == 0)
+        k_graph->path[control] = create_path(node_a,node_b,distance);
+
+        if(check_graph(k_graph, control) == 0){
+            i++;
             control++;
-        else
+        }else{
             k_graph->path[control] = NULL;
+            i++;
+        }
     }
-
 }
 
 int check_graph(struct Graph *k_graph, int path_size){
