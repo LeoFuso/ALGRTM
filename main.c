@@ -16,6 +16,7 @@ struct Path {
 struct Graph {
     int n_path, n_node;
     struct Path **path;
+    struct Node **node;
 };
 
 
@@ -49,8 +50,18 @@ int main(void) {
 
     printf("\n\nSORTED PATH:\n");
     print_paths(o_graph);
+    printf("\n\nTHIS IS A FAILURE!\n");
 
     return 0;
+}
+
+
+void kruskal(struct Graph *o_graph, struct Graph *k_graph){
+
+    for (int i = 0; i < o_graph->n_node ; ++i) {
+
+    }
+
 }
 
 struct Graph *create_graph(int n_path, int n_node) {
@@ -59,6 +70,7 @@ struct Graph *create_graph(int n_path, int n_node) {
     graph->n_path = n_path;
     graph->n_node = n_node;
     graph->path = (struct Path *)malloc(n_path * sizeof(struct Path));
+    graph->node = (struct Node *)malloc(n_node * sizeof(struct Node));
 }
 
 struct Path *create_path(struct Node *node_a, struct Node *node_b, int distance) {
@@ -78,26 +90,36 @@ struct Node *create_node(char *name){
     struct Node *new_node = NULL;
     new_node = malloc(sizeof(struct Node));
     strcpy(new_node->name, name);
+    new_node->parent = NULL;
     return new_node;
-
 }
 
 void mount_initial_graph(struct Graph *graph) {
 
+    struct Node *node_A = create_node("A");
+    struct Node *node_B = create_node("B");
+    struct Node *node_C = create_node("C");
+    struct Node *node_D = create_node("D");
+
+    graph->node[0] = node_A;
+    graph->node[1] = node_B;
+    graph->node[2] = node_C;
+    graph->node[3] = node_D;
+
     //A --> B = 25
-    graph->path[0] = create_path(create_node("A"),create_node("B"),25);
+    graph->path[0] = create_path(node_A,node_B,25);
 
     //B --> C = 50
-    graph->path[1] = create_path(create_node("B"),create_node("C"),50);
+    graph->path[1] = create_path(node_B,node_C,50);
 
     //C --> D = 10
-    graph->path[2] = create_path(create_node("C"),create_node("D"),10);
+    graph->path[2] = create_path(node_C,node_D,10);
 
     //A --> D = 25
-    graph->path[3] = create_path(create_node("A"),create_node("D"),25);
+    graph->path[3] = create_path(node_A,node_D,25);
 
     //A --> C = 40
-    graph->path[4] = create_path(create_node("A"),create_node("C"),40);
+    graph->path[4] = create_path(node_A,node_C,40);
 
 }
 
