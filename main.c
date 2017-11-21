@@ -43,8 +43,7 @@ struct Graph **mount_initial_graph_2(void);
 void re_mount_nodes(struct Graph *o_graph, struct Graph *k_graph);
 
 /* logic functions */
-void recursive_kruskal(struct Graph *o_graph, struct Graph *k_graph, int path_to_remove);
-void kruskal(struct Graph *o_graph, struct Graph *k_graph);
+void kruskal(struct Graph *o_graph, struct Graph *k_graph, int path_to_remove);
 int check_graph(struct Path **path, int path_size);
 struct Node *_find(struct Node *node);
 void _union(struct Node *n_from, struct Node *n_to);
@@ -86,7 +85,7 @@ void _test(struct Graph **(*mount)(void)) {
     printf("\n\nSORTED PATH:\n");
     print_paths(o_graph);
 
-    recursive_kruskal(o_graph, k_graph,-1);
+    kruskal(o_graph, k_graph,-1);
 
     printf("\n\nKRUSKAL GRAPH: \n");
     printf("%d NODES \n", k_graph->n_node);
@@ -106,7 +105,7 @@ struct Node *_find_node(struct Graph *graph, char * name){
      }
 }
 
-void recursive_kruskal(struct Graph *o_graph, struct Graph *k_graph, int path_to_remove){
+void kruskal(struct Graph *o_graph, struct Graph *k_graph, int path_to_remove){
 
     if(path_to_remove != -1){
 
@@ -137,61 +136,7 @@ void recursive_kruskal(struct Graph *o_graph, struct Graph *k_graph, int path_to
     int is_cycle = check_graph(k_graph->path, o_graph->n_path);
 
     if(is_cycle != -1)
-        recursive_kruskal(o_graph, k_graph, is_cycle);
-
-}
-
-/* looking for a better way of doing this */
-void kruskal(struct Graph *o_graph, struct Graph *k_graph) {
-
-
-    re_mount_nodes(o_graph,k_graph);
-
-    for (int j = 0; j < o_graph->n_path; ++j) {
-
-        struct Node *node_a = _find_node(k_graph, o_graph->path[j]->node_a->name);
-        struct Node *node_b = _find_node(k_graph, o_graph->path[j]->node_b->name);
-        int distance = o_graph->path[j]->distance;
-        char *x_name = node_a->name;
-        char *y_name = node_b->name;
-        k_graph->path[j] = create_path(node_a, node_b, distance);
-
-    }
-
-    int is_cycle = check_graph(k_graph->path, o_graph->n_path);
-
-    /* this is O(n²) */
-    while (is_cycle != 0) {
-        is_cycle = _do_loop_kruskal(o_graph, k_graph, is_cycle);
-    }
-}
-
-int _do_loop_kruskal(struct Graph *o_graph, struct Graph *k_graph, int path_to_remove) {
-
-    remove_cycle_element(o_graph->path, path_to_remove, o_graph->n_path);
-
-    struct Path **tmp = realloc(o_graph->path, (o_graph->n_path - 1) * sizeof(struct Path *));
-
-    if (tmp == NULL && o_graph->n_path > 1) {
-
-        /* No memory available */
-        exit(EXIT_FAILURE);
-    }
-    o_graph->n_path = o_graph->n_path - 1;
-    o_graph->path = tmp;
-
-    /*starting again */
-
-    re_mount_nodes(o_graph,k_graph);
-
-    for (int j = 0; j < o_graph->n_path; ++j) {
-        struct Node *node_a = _find_node(k_graph, o_graph->path[j]->node_a->name);
-        struct Node *node_b = _find_node(k_graph, o_graph->path[j]->node_b->name);
-        int distance = o_graph->path[j]->distance;
-        k_graph->path[j] = create_path(node_a, node_b, distance);
-    }
-
-   return check_graph(k_graph->path, o_graph->n_path);
+        kruskal(o_graph, k_graph, is_cycle);
 
 }
 
