@@ -328,7 +328,7 @@ void print_nodes(struct Graph *graph) {
         if (n->parent == NULL)
             printf("\n%s --> NULL", n->name);
         else
-            printf("\n%s --> %s", n->name, n->parent);
+            printf("\n%s --> %s", n->name, n->parent->name);
     }
     printf("\n\n");
 }
