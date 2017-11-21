@@ -2,36 +2,34 @@
 #include <stdlib.h>
 #include <string.h>
 
-//Leonardo Fuso Nuzzo         31500129
-//Gustavo Boldrini Custoias   31553826
-
 struct Node {
-    char name[2];
-    int last_parent;
-    int last_children;
-    struct Node *parents;
-    struct Node *children;
+    char name[3];
+    struct Node *parent;
 };
 
-typedef struct {
-    struct Node node_a;
-    struct Node node_b;
+struct Path {
+    struct Node *node_a;
+    struct Node *node_b;
     int distance;
-} Path;
+};
 
-void print_paths(Path *p, int path_size);
+struct Graph {
+    int n_path, n_node;
+    struct Path **path;
+};
 
-void print_nodes(struct Node *n, int nodes_qtd);
 
+struct Graph *create_graph(int n_path, int n_node);
+struct Path *create_path(struct Node *node_a, struct Node *node_b, int distance);
+struct Node *create_node(char *name);
+
+void mount_initial_graph(struct Graph *graph);
 int compare(const void *s1, const void *s2);
+void print_paths(struct Graph *graph);
+void print_nodes(struct Graph *graph);
 
-void setup(struct Node *original_nodes, struct Node *kruskal_nodes, int nodes_qtd);
+void setup(struct Graph *o_graph, struct Graph *k_graph);
 
-
-void kruskal(Path *original_path, int original_path_size, Path *kruskal_path, int kruskal_path_size,
-             struct Node *original_nodes, struct Node *kruskal_nodes, int nodes_qtd);
-
-int check_children(struct Node from_node, struct Node node, char *to_find);
 
 int main(void) {
 
@@ -39,342 +37,120 @@ int main(void) {
     int original_path_size = 5;
     int kruskal_path_size = nodes_qtd - 1;
 
-    Path *original_path = malloc(original_path_size * sizeof(Path));
-    Path *kruskal_path = malloc(kruskal_path_size * sizeof(Path));
+    struct Graph *k_graph = create_graph(kruskal_path_size,nodes_qtd);
 
-    struct Node *original_nodes = malloc(nodes_qtd * sizeof(struct Node));
-    struct Node *kruskal_nodes = malloc(nodes_qtd * sizeof(struct Node));
-
-
-    mount_paths_nodes(original_path, original_nodes, nodes_qtd);
-
-
-    printf("\n\nORIGINAL NODES:\n");
-    print_nodes(original_nodes, nodes_qtd);
+    struct Graph *o_graph = create_graph(original_path_size,nodes_qtd);
+    mount_initial_graph(o_graph);
 
     printf("\n\nORIGINAL PATH:\n");
-    print_paths(original_path, original_path_size);
+    print_paths(o_graph);
 
-
-    qsort(original_path, original_path_size, sizeof(Path), compare);
+    qsort(o_graph->path, o_graph->n_path, sizeof(struct Path *), compare);
 
     printf("\n\nSORTED PATH:\n");
-
-    print_paths(original_path, original_path_size);
-
-    setup(original_nodes, kruskal_nodes, nodes_qtd);
-
-    kruskal(original_path, original_path_size, kruskal_path, kruskal_path_size, original_nodes, kruskal_nodes,
-            nodes_qtd);
-
-    printf("\n\nKRUSKAL NODES:\n");
-    print_nodes(kruskal_nodes, nodes_qtd);
-
-    printf("\n\nKRUSKAL PATH:\n");
-    print_paths(kruskal_path, kruskal_path_size);
+    print_paths(o_graph);
 
     return 0;
 }
 
-
-void kruskal(Path *original_path, int original_path_size, Path *kruskal_path, int kruskal_path_size,
-             struct Node *original_nodes, struct Node *kruskal_nodes, int nodes_qtd) {
-    int i;
-    int j;
-    Path i_path;
-    struct Node j_node;
-    int from_node;
-    int to_node;
-
-    int from_is_set = 0;
-    int to_is_set = 0;
-
-    int kruskal_path_control = 0;
-
-    for (i = 0; i < original_path_size; ++i) {
-
-        i_path = original_path[i];
-
-        for (j = 0; j < nodes_qtd; ++j) {
-
-            j_node = kruskal_nodes[j];
-
-            if (strcmp(j_node.name, i_path.node_a.name) == 0) {
-                from_node = j;
-                from_is_set = 1;
-            }
-
-            if (strcmp(j_node.name, i_path.node_b.name) == 0) {
-                to_node = j;
-                to_is_set = 1;
-            }
-            if (from_is_set == 1 && to_is_set == 1) {
-                j = nodes_qtd;
-                from_is_set = to_is_set = 0;
-            }
-        }
-
-        j = 0;
-
-        struct Node s_from_node = kruskal_nodes[from_node];
-        struct Node s_to_node = kruskal_nodes[to_node];
-
-
-        if (check_children(s_from_node,s_from_node, s_to_node.name) == 0) {
-            kruskal_path[kruskal_path_control++] = i_path;
-            kruskal_nodes[from_node].parents[kruskal_nodes[from_node].last_parent++] = kruskal_nodes[to_node];
-            kruskal_nodes[to_node].children[kruskal_nodes[to_node].last_children++] = kruskal_nodes[from_node];
-        }
-
-        if (kruskal_path_control > kruskal_path_size)
-            i = original_path_size;
-
-    }
+struct Graph *create_graph(int n_path, int n_node) {
+    struct Graph *graph =
+            (struct Graph *) malloc(sizeof(struct Graph));
+    graph->n_path = n_path;
+    graph->n_node = n_node;
+    graph->path = (struct Path *)malloc(n_path * sizeof(struct Path));
 }
 
-int check_children(struct Node from_node, struct Node node, char *to_find) {
+struct Path *create_path(struct Node *node_a, struct Node *node_b, int distance) {
 
-    int j;
-    int result = 0;
+    struct Path *new_path = NULL;
 
-    if (strcmp(node.name, to_find) == 0)
-        return 1;
+    new_path = malloc(sizeof(struct Path));
+    new_path->node_a = node_a;
+    new_path->node_b = node_b;
+    new_path->distance = distance;
 
-    for (j = 0; j < node.last_parent; ++j) {
-        if (!strcmp(from_node.name, node.parents[j].name) == 0) {
-            result += check_children(node, node.parents[j], to_find);
-        }
-    }
-
-    if (result > 0)
-        return 1;
-
-    for (j = 0; j < node.last_children; ++j) {
-        if (!strcmp(from_node.name, node.children[j].name) == 0){
-            result += check_children(node, node.children[j], to_find);
-        }
-    }
-
-    if (result > 0)
-        return 1;
-
-    return 0;
+    return new_path;
 }
 
-void mount_paths_nodes(Path *p, struct Node *n, int nodes_qtd) {
+struct Node *create_node(char *name){
 
-    strcpy(n[0].name, "A");
-    n[0].parents = malloc((nodes_qtd - 1) * sizeof(struct Node));
-    n[0].children = malloc((nodes_qtd - 1) * sizeof(struct Node));
+    struct Node *new_node = NULL;
+    new_node = malloc(sizeof(struct Node));
+    strcpy(new_node->name, name);
+    return new_node;
 
-    strcpy(n[1].name, "B");
-    n[1].parents = malloc((nodes_qtd - 1) * sizeof(struct Node));
-    n[1].children = malloc((nodes_qtd - 1) * sizeof(struct Node));
-
-
-    strcpy(n[2].name, "C");
-    n[2].parents = malloc((nodes_qtd - 1) * sizeof(struct Node));
-    n[2].children = malloc((nodes_qtd - 1) * sizeof(struct Node));
-
-
-    strcpy(n[3].name, "D");
-    n[3].parents = malloc((nodes_qtd - 1) * sizeof(struct Node));
-    n[3].children = malloc((nodes_qtd - 1) * sizeof(struct Node));
-
-
-    //B --> A = 25
-    p[0].distance = 25;
-    p[0].node_a = n[1];
-    p[0].node_b = n[0];
-    n[1].parents[n[1].last_parent++] = n[0];
-    n[0].children[n[0].last_children++] = n[1];
-
-    //C --> B = 50
-    p[1].distance = 50;
-    p[1].node_a = n[2];
-    p[1].node_b = n[1];
-    n[2].parents[n[2].last_parent++] = n[1];
-    n[1].children[n[1].last_children++] = n[2];
-
-    //D --> C = 10
-    p[2].distance = 10;
-    p[2].node_a = n[3];
-    p[2].node_b = n[2];
-    n[3].parents[n[3].last_parent++] = n[2];
-    n[2].children[n[2].last_children++] = n[3];
-
-
-
-    //D --> A = 25
-    p[3].distance = 25;
-    p[3].node_a = n[3];
-    p[3].node_b = n[0];
-    n[3].parents[n[3].last_parent++] = n[0];
-    n[0].children[n[0].last_children++] = n[3];
-
-
-    //C --> A = 40
-    p[4].distance = 40;
-    p[4].node_a = n[2];
-    p[4].node_b = n[0];
-    n[2].parents[n[2].last_parent++] = n[0];
-    n[0].children[n[0].last_children++] = n[2];
 }
 
-void mount_paths_nodes_2(Path *p, struct Node *n, int nodes_qtd) {
+void mount_initial_graph(struct Graph *graph) {
 
-    strcpy(n[0].name, "V1");
-    n[0].parents = malloc((nodes_qtd - 1) * sizeof(struct Node));
-    n[0].children = malloc((nodes_qtd - 1) * sizeof(struct Node));
+    //A --> B = 25
+    graph->path[0] = create_path(create_node("A"),create_node("B"),25);
 
-    strcpy(n[1].name, "V2");
-    n[1].parents = malloc((nodes_qtd - 1) * sizeof(struct Node));
-    n[1].children = malloc((nodes_qtd - 1) * sizeof(struct Node));
+    //B --> C = 50
+    graph->path[1] = create_path(create_node("B"),create_node("C"),50);
 
+    //C --> D = 10
+    graph->path[2] = create_path(create_node("C"),create_node("D"),10);
 
-    strcpy(n[2].name, "V3");
-    n[2].parents = malloc((nodes_qtd - 1) * sizeof(struct Node));
-    n[2].children = malloc((nodes_qtd - 1) * sizeof(struct Node));
+    //A --> D = 25
+    graph->path[3] = create_path(create_node("A"),create_node("D"),25);
 
+    //A --> C = 40
+    graph->path[4] = create_path(create_node("A"),create_node("C"),40);
 
-    strcpy(n[3].name, "V4");
-    n[3].parents = malloc((nodes_qtd - 1) * sizeof(struct Node));
-    n[3].children = malloc((nodes_qtd - 1) * sizeof(struct Node));
+}
 
-    strcpy(n[4].name, "V5");
-    n[4].parents = malloc((nodes_qtd - 1) * sizeof(struct Node));
-    n[4].children = malloc((nodes_qtd - 1) * sizeof(struct Node));
+void mount_initial_graph_2(struct Graph graph) {
 
+    //v1 --> v2 = 9
+    graph.path[0] = create_path(create_node("v1"),create_node("v2"),9);
 
-    //V2 --> V1 = 9
-    p[0].distance = 9;
-    p[0].node_a = n[1];
-    p[0].node_b = n[0];
-
-    n[1].parents[n[1].last_parent++] = n[0];
-    n[0].children[n[0].last_children++] = n[1];
-
-    //V3 --> V2 = 8
-    p[1].distance = 8;
-    p[1].node_a = n[2];
-    p[1].node_b = n[1];
-
-    n[2].parents[n[2].last_parent++] = n[1];
-    n[1].children[n[1].last_children++] = n[2];
+    //v2 --> v3 = 8
+    graph.path[1] = create_path(create_node("v2"),create_node("v3"),8);
 
     //V4 --> V3 = 10
-    p[2].distance = 10;
-    p[2].node_a = n[3];
-    p[2].node_b = n[2];
-
-    n[3].parents[n[3].last_parent++] = n[2];
-    n[2].children[n[2].last_children++] = n[3];
-
 
     //V5 --> V4 = 7
-    p[3].distance = 7;
-    p[3].node_a = n[4];
-    p[3].node_b = n[3];
-
-    n[4].parents[n[4].last_parent++] = n[3];
-    n[3].children[n[3].last_children++] = n[4];
-
 
     //V3 --> V1 = 6
-    p[4].distance = 6;
-    p[4].node_a = n[2];
-    p[4].node_b = n[0];
-
-    n[2].parents[n[2].last_parent++] = n[0];
-    n[0].children[n[0].last_children++] = n[2];
 
     //V4 --> V1 = 15
-    p[5].distance = 15;
-    p[5].node_a = n[3];
-    p[5].node_b = n[0];
-
-    n[3].parents[n[3].last_parent++] = n[0];
-    n[0].children[n[0].last_children++] = n[3];
 
     //V5 --> V1 = 14
-    p[6].distance = 14;
-    p[6].node_a = n[4];
-    p[6].node_b = n[0];
-
-    n[4].parents[n[4].last_parent++] = n[0];
-    n[0].children[n[0].last_children++] = n[4];
 
     //V4 --> V2 = 17
-    p[7].distance = 17;
-    p[7].node_a = n[3];
-    p[7].node_b = n[1];
-
-    n[3].parents[n[3].last_parent++] = n[1];
-    n[1].children[n[1].last_children++] = n[3];
 
     //V5 --> V2 = 12
-    p[8].distance = 12;
-    p[8].node_a = n[4];
-    p[8].node_b = n[1];
-
-    n[4].parents[n[4].last_parent++] = n[1];
-    n[1].children[n[1].last_children++] = n[4];
 
     //V5 --> V3 = 9
-    p[9].distance = 9;
-    p[9].node_a = n[4];
-    p[9].node_b = n[2];
-
-    n[4].parents[n[4].last_parent++] = n[2];
-    n[2].children[n[2].last_children++] = n[4];
-
 
 }
 
-void print_nodes(struct Node *n, int nodes_qtd) {
-    int i;
-    int j;
-    for (i = 0; i < nodes_qtd; ++i) {
+void print_nodes(struct Graph *graph) {
 
-        printf("\n--%s", n[i].name);
-
-        for (j = 0; j < n[i].last_parent; ++j) {
-            printf("\n  |__%s", n[i].parents[j].name);
-        }
-        printf("\n\n");
-    }
 }
 
-void print_paths(Path *p, int path_size) {
+void print_paths(struct Graph *graph) {
     int i;
-    for (i = 0; i < path_size; ++i) {
-        printf("\n%s --> %s = %d", p[i].node_a.name, p[i].node_b.name, p[i].distance);
+    for (i = 0; i < graph->n_path; ++i) {
+        struct Path *p = graph->path[i];
+        printf("\n%s --> %s = %d",p->node_a->name,p->node_b->name, p->distance);
     }
     printf("\n\n");
 }
 
 int compare(const void *s1, const void *s2) {
-    Path *p1 = (Path *) s1;
-    Path *p2 = (Path *) s2;
-    if (p1->distance == p2->distance) {
-        int point_compare_a = strcmp(p1->node_a.name, p2->node_a.name);
-        if (point_compare_a == 0) {
-            return strcmp(p1->node_b.name, p2->node_b.name);
-        } else {
-            return point_compare_a;
-        }
-    } else {
+    struct Path *p1 = s1;
+    struct Path *p2 = s2;
+
+    if (p1->distance != p2->distance)
         return p1->distance - p2->distance;
-    }
+    else
+        return strcmp(p1->node_a->name,p2->node_a->name) ||
+               strcmp(p1->node_b->name,p2->node_b->name);
 }
 
-void setup(struct Node *original_nodes, struct Node *kruskal_nodes, int nodes_qtd) {
-    int k;
-
-    for (k = 0; k < nodes_qtd; ++k) {
-        strcpy(kruskal_nodes[k].name, original_nodes[k].name);
-        kruskal_nodes[k].parents = malloc((nodes_qtd - 1) * sizeof(struct Node));
-        kruskal_nodes[k].children = malloc((nodes_qtd - 1) * sizeof(struct Node));
-    }
+void setup(struct Graph *o_graph, struct Graph *k_graph) {
 
 }
