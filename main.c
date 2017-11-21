@@ -29,8 +29,11 @@ int compare(const void *s1, const void *s2);
 void print_paths(struct Graph *graph);
 void print_nodes(struct Graph *graph);
 
-void setup(struct Graph *o_graph, struct Graph *k_graph);
 
+void kruskal(struct Graph *o_graph, struct Graph *k_graph);
+int check_graph(struct Graph *k_graph, int path_size);
+struct Node * _find(struct Node *node);
+void _union(struct Path **path, struct Node *n_from, struct Node *n_to);
 
 int main(void) {
 
@@ -52,16 +55,68 @@ int main(void) {
     print_paths(o_graph);
     printf("\n\nTHIS IS A FAILURE!\n");
 
+    printf("\n\nSERA PATH:\n");
+
+    //kruskal(o_graph,k_graph);
+
+    //print_paths(k_graph);
+
+    for (int i = 0; i < 3; ++i) {
+        k_graph->path[i] = create_path(o_graph->path[i]->node_a,o_graph->path[i]->node_b,o_graph->path[i]->distance);
+    }
+
+    if(check_graph(k_graph, 3) == 0)
+        printf("FODEU");
+    else
+        printf("K");
+
     return 0;
 }
 
 
 void kruskal(struct Graph *o_graph, struct Graph *k_graph){
+    int control = 0;
+    for (int i = 0; i < o_graph->n_path ; ++i) {
+        struct Path *o_path = o_graph->path[i];
 
-    for (int i = 0; i < o_graph->n_node ; ++i) {
+        if(control > k_graph->n_path)
+            break;
 
+        k_graph->path[control] = create_path(o_path->node_a,o_path->node_b,o_path->distance);
+
+        if(check_graph(k_graph, control) == 0)
+            control++;
+        else
+            k_graph->path[control] = NULL;
     }
 
+}
+
+int check_graph(struct Graph *k_graph, int path_size){
+
+    for (int i = 0; i < path_size; ++i) {
+        struct Node *x = _find(k_graph->path[i]->node_a);
+        struct Node *y = _find(k_graph->path[i]->node_b);
+
+        if(strcmp(x->name,y->name) == 0)
+            return 1;
+
+        _union(k_graph->path,x,y);
+    }
+    return 0;
+}
+
+struct Node * _find(struct Node *node){
+    if(node->parent == NULL)
+        return node;
+    return _find(node->parent);
+}
+
+void _union(struct Path **path, struct Node *n_from, struct Node *n_to){
+
+    struct Node *x_set = _find(n_from);
+    struct Node *y_set = _find(n_to);
+    x_set->parent = y_set;
 }
 
 struct Graph *create_graph(int n_path, int n_node) {
@@ -163,13 +218,14 @@ void print_paths(struct Graph *graph) {
 }
 
 int compare(const void *s1, const void *s2) {
-    struct Path *p1 = s1;
-    struct Path *p2 = s2;
+
+    struct Path *p1 = *(struct Path **) s1;
+    struct Path *p2 = *(struct Path **) s2;
 
     if (p1->distance != p2->distance)
         return p1->distance - p2->distance;
     else
-        return strcmp(p1->node_a->name,p2->node_a->name) ||
+        return strcmp(p1->node_a->name,p2->node_a->name) <
                strcmp(p1->node_b->name,p2->node_b->name);
 }
 
