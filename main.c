@@ -23,9 +23,7 @@ struct Graph {
 
 /* get_struct functions */
 struct Graph *create_graph(int n_path, int n_node);
-
 struct Path *create_path(struct Node *node_a, struct Node *node_b, int distance);
-
 struct Node *create_node(char *name);
 
 /* aux functions */
@@ -42,6 +40,7 @@ void remove_cycle_element(struct Path **path, int index, int n_path);
 void _test(struct Graph **(*mount)(void));
 struct Graph *mount_initial_graph_1(void);
 struct Graph *mount_initial_graph_2(void);
+struct Graph *mount_initial_graph_3(void);
 
 /* logic functions */
 void kruskal(struct Graph *graph);
@@ -56,6 +55,8 @@ int main(void) {
     _test(&mount_initial_graph_1);
     printf("\n\nTEST 2: \n");
     _test(&mount_initial_graph_2);
+    printf("\n\nTEST 3: \n");
+    _test(&mount_initial_graph_3);
 
     return 0;
 }
@@ -99,7 +100,6 @@ void _test(struct Graph **(*mount)(void)) {
 void kruskal(struct Graph *graph) {
 
     for (int i = 0; i < graph->n_path; ++i) {
-
 
         struct Node *x_parent = _find(graph->path[i]->node_a);
         struct Node *y_parent = _find(graph->path[i]->node_b);
@@ -259,6 +259,61 @@ struct Graph *mount_initial_graph_2(void) {
 
     //v3 --> v5 = 9
     graph->path[9] = create_path(node_v3, node_v5, 9);
+
+    return graph;
+}
+
+struct Graph *mount_initial_graph_3(void) {
+
+    int nodes_qtd = 6;
+    int path_size = 15;
+
+    struct Graph *graph = create_graph(path_size, nodes_qtd);
+
+    struct Node *node_L  = create_node("L ");
+    struct Node *node_T  = create_node("T ");
+    struct Node *node_MC = create_node("MC");
+    struct Node *node_Pe = create_node("Pe");
+    struct Node *node_NY = create_node("NY");
+    struct Node *node_Pa = create_node("Pa");
+
+
+    graph->node[0] = node_L;
+    graph->node[1] = node_T;
+    graph->node[2] = node_MC;
+    graph->node[3] = node_Pe;
+    graph->node[4] = node_NY;
+    graph->node[5] = node_Pa;
+
+    graph->path[0] = create_path(node_L, node_MC, 56);
+
+    graph->path[1] = create_path(node_L, node_NY, 35);
+
+    graph->path[2] = create_path(node_L, node_Pa, 2);
+
+    graph->path[3] = create_path(node_L, node_Pe, 51);
+
+    graph->path[4] = create_path(node_L, node_T, 60);
+
+    graph->path[5] = create_path(node_MC, node_T, 70);
+
+    graph->path[6] = create_path(node_MC, node_NY, 21);
+
+    graph->path[7] = create_path(node_MC, node_Pa, 57);
+
+    graph->path[8] = create_path(node_MC, node_Pe, 78);
+
+    graph->path[9] = create_path(node_NY, node_T, 68);
+
+    graph->path[10] = create_path(node_NY, node_Pe, 68);
+
+    graph->path[11] = create_path(node_NY, node_Pa, 36);
+
+    graph->path[12] = create_path(node_Pa, node_Pe, 51);
+
+    graph->path[13] = create_path(node_Pa, node_T, 61);
+
+    graph->path[14] = create_path(node_Pe, node_T, 13);
 
     return graph;
 }
