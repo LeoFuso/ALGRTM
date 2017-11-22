@@ -125,7 +125,7 @@ void kruskal(struct Graph *o_graph, struct Graph *k_graph, int path_to_remove) {
 
         remove_cycle_element(o_graph->path, path_to_remove, o_graph->n_path);
 
-        struct Path **tmp = realloc(o_graph->path, (o_graph->n_path - 1) * sizeof(struct Path *));
+        struct Path **tmp = (struct Path **) realloc(o_graph->path, (o_graph->n_path - 1) * sizeof(struct Path *));
 
         if (tmp == NULL && o_graph->n_path > 1) {
 
@@ -200,7 +200,7 @@ struct Path *create_path(struct Node *node_a, struct Node *node_b, int distance)
 
     struct Path *new_path = NULL;
 
-    new_path = malloc(sizeof(struct Path));
+    new_path = (struct Path*) malloc(sizeof(struct Path));
     new_path->node_a = node_a;
     new_path->node_b = node_b;
     new_path->distance = distance;
@@ -211,7 +211,7 @@ struct Path *create_path(struct Node *node_a, struct Node *node_b, int distance)
 struct Node *create_node(char *name) {
 
     struct Node *new_node = NULL;
-    new_node = malloc(sizeof(struct Node));
+    new_node = (struct Node*) malloc(sizeof(struct Node));
     strcpy(new_node->name, name);
     new_node->parent = NULL;
     return new_node;
@@ -252,7 +252,7 @@ struct Graph **mount_initial_graph_1(void) {
     graph->path[4] = create_path(node_A, node_C, 40);
 
     struct Graph **graphs = NULL;
-    graphs = malloc(2 * sizeof(struct Graph *));
+    graphs = (struct Graph**) malloc(2 * sizeof(struct Graph *));
 
     graphs[0] = graph; // original_graph
     graphs[1] = k_graph; // kruskal_graph
@@ -313,7 +313,7 @@ struct Graph **mount_initial_graph_2(void) {
     graph->path[9] = create_path(node_v3, node_v5, 9);
 
     struct Graph **graphs = NULL;
-    graphs = malloc(2 * sizeof(struct Graph *));
+    graphs = (struct Graph**) malloc(2 * sizeof(struct Graph *));
 
     graphs[0] = graph; // original_graph
     graphs[1] = k_graph; // kruskal_graph
