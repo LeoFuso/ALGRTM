@@ -54,18 +54,64 @@ void _union(struct Node *n_from, struct Node *n_to);
 int main(void) {
 
 
-    printf("\n\nTEST 1: \n");
-    _test(&mount_initial_graph_1);
-    printf("\n\nTEST 2: \n");
-    _test(&mount_initial_graph_2);
+    //printf("\n\nTEST 1: \n");
+    //_test(&mount_initial_graph_1);
+    //printf("\n\nTEST 2: \n");
+    //_test(&mount_initial_graph_2);
 
+    struct Graph **graph_to_test = mount_initial_graph_2();
+    struct Graph *o_graph = graph_to_test[0];
+    struct Graph *k_graph = graph_to_test[1];
+
+    qsort(o_graph->path, o_graph->n_path, sizeof(struct Path *), compare);
+
+    printf("\n\nSORTED PATH:\n");
+    print_paths(o_graph);
+
+    printf("\n\nORIGINAL TREE: \n");
+    print_nodes(o_graph);
+
+
+    for (int i = 0; i < o_graph->n_path; ++i) {
+
+
+        struct Node *x_parent = _find(o_graph->path[i]->node_a);
+        struct Node *y_parent = _find(o_graph->path[i]->node_b);
+
+        if (strcmp(x_parent->name, y_parent->name) == 0)
+        {
+            remove_cycle_element(o_graph->path, i, o_graph->n_path);
+
+            struct Path **tmp = (struct Path **) realloc(o_graph->path, (o_graph->n_path - 1) * sizeof(struct Path *));
+
+            if (tmp == NULL && o_graph->n_path > 1) {
+                /* No memory available */
+                exit(EXIT_FAILURE);
+            }
+
+            o_graph->n_path = o_graph->n_path - 1;
+            o_graph->path = tmp;
+            i--;
+
+        }else{
+            _union(x_parent, y_parent);
+        }
+
+    }
+
+    printf("\n\nSHORTEST PATH: \n");
+    print_paths(o_graph);
+    printf("PATH DISTANCE SIZE: %d\n", get_path_size(o_graph));
+
+    printf("\n\nKRUSKAL TREE: \n");
+    print_nodes(o_graph);
 
     return 0;
 }
 
 void remove_cycle_element(struct Path **path, int index, int n_path) {
     int i;
-    for (i = index; i < n_path - 1; i++) path[i] = path[i + 1];
+    for (i = index; i < n_path - 2; i++) path[i] = path[i + 1];
 }
 
 void _test(struct Graph **(*mount)(void)) {
@@ -99,6 +145,8 @@ void _test(struct Graph **(*mount)(void)) {
 
     printf("\n\nKRUSKAL TREE: \n");
     print_nodes(k_graph);
+
+
 
 }
 
