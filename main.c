@@ -33,7 +33,7 @@ void print_nodes(struct Graph *graph);
 int get_path_size(struct Graph *graph);
 
 /* structural functions */
-void remove_cycle_element(struct Path **path, int index, int n_path);
+int remove_cycle_element(struct Graph *graph, int index);
 
 
 /* main test */
@@ -104,29 +104,27 @@ void kruskal(struct Graph *graph) {
         struct Node *x_parent = _find(graph->path[i]->node_a);
         struct Node *y_parent = _find(graph->path[i]->node_b);
 
-        if (strcmp(x_parent->name, y_parent->name) == 0) {
-            remove_cycle_element(graph->path, i, graph->n_path);
-
-            struct Path **tmp = (struct Path **) realloc(graph->path, (graph->n_path - 1) * sizeof(struct Path *));
-
-            if (tmp == NULL && graph->n_path > 1) {
-                /* No memory available */
-                exit(EXIT_FAILURE);
-            }
-
-            graph->n_path = graph->n_path - 1;
-            graph->path = tmp;
-            i--;
-
-        } else {
+        if (strcmp(x_parent->name, y_parent->name) == 0)
+            i = remove_cycle_element(graph, i);
+        else
             _union(x_parent, y_parent);
-        }
     }
 }
 
-void remove_cycle_element(struct Path **path, int index, int n_path) {
-    int i;
-    for (i = index; i < n_path - 2; i++) path[i] = path[i + 1];
+int remove_cycle_element(struct Graph *graph, int index) {
+
+    for (int i = index; i < graph->n_path - 2; i++) graph->path[i] = graph->path[i + 1];
+
+    struct Path **tmp = (struct Path **) realloc(graph->path, (graph->n_path - 1) * sizeof(struct Path *));
+
+    /* No memory available */
+    if (tmp == NULL && graph->n_path > 1)
+        exit(EXIT_FAILURE);
+
+    graph->n_path = graph->n_path - 1;
+    graph->path = tmp;
+
+    return --index;
 }
 
 struct Node *_find(struct Node *node) {
