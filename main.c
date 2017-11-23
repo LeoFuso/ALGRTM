@@ -35,7 +35,6 @@ int get_path_size(struct Graph *graph);
 /* structural functions */
 int remove_cycle_element(struct Graph *graph, int index);
 
-
 /* main test */
 void _test(struct Graph **(*mount)(void));
 struct Graph *mount_initial_graph_1(void);
@@ -46,7 +45,6 @@ struct Graph *mount_initial_graph_3(void);
 void kruskal(struct Graph *graph);
 struct Node *_find(struct Node *node);
 void _union(struct Node *n_from, struct Node *n_to);
-
 
 int main(void) {
 
