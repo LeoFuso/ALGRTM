@@ -50,7 +50,6 @@ void _union(struct Node *n_from, struct Node *n_to);
 
 int main(void) {
 
-
     printf("\n\nTEST 1: \n");
     _test(&mount_initial_graph_1);
     printf("\n\nTEST 2: \n");
@@ -61,6 +60,49 @@ int main(void) {
     return 0;
 }
 
+void kruskal(struct Graph *graph) {
+
+    for (int i = 0; i < graph->n_path; ++i) {
+
+        struct Node *x_parent = _find(graph->path[i]->node_a);
+        struct Node *y_parent = _find(graph->path[i]->node_b);
+
+        if (strcmp(x_parent->name, y_parent->name) == 0)
+            i = remove_cycle_element(graph, i);
+        else
+            _union(x_parent, y_parent);
+    }
+}
+
+void _union(struct Node *n_from, struct Node *n_to) {
+
+    struct Node *x_set = _find(n_from);
+    struct Node *y_set = _find(n_to);
+
+    x_set->parent = y_set;
+}
+
+struct Node *_find(struct Node *node) {
+    if (node->parent == NULL)
+        return node;
+    return _find(node->parent);
+}
+
+int remove_cycle_element(struct Graph *graph, int index) {
+
+    for (int i = index; i < graph->n_path - 2; i++) graph->path[i] = graph->path[i + 1];
+
+    struct Path **tmp = (struct Path **) realloc(graph->path, (graph->n_path - 1) * sizeof(struct Path *));
+
+    /* No memory available */
+    if (tmp == NULL && graph->n_path > 1)
+        exit(EXIT_FAILURE);
+
+    graph->n_path = graph->n_path - 1;
+    graph->path = tmp;
+
+    return --index;
+}
 
 void _test(struct Graph **(*mount)(void)) {
 
@@ -89,56 +131,13 @@ void _test(struct Graph **(*mount)(void)) {
 
     printf("\n\nSHORTEST PATH: \n");
     print_paths(graph);
+
     printf("PATH DISTANCE SIZE: %d\n", get_path_size(graph));
 
     printf("\n\nKRUSKAL TREE: \n");
     print_nodes(graph);
 
 
-}
-
-void kruskal(struct Graph *graph) {
-
-    for (int i = 0; i < graph->n_path; ++i) {
-
-        struct Node *x_parent = _find(graph->path[i]->node_a);
-        struct Node *y_parent = _find(graph->path[i]->node_b);
-
-        if (strcmp(x_parent->name, y_parent->name) == 0)
-            i = remove_cycle_element(graph, i);
-        else
-            _union(x_parent, y_parent);
-    }
-}
-
-int remove_cycle_element(struct Graph *graph, int index) {
-
-    for (int i = index; i < graph->n_path - 2; i++) graph->path[i] = graph->path[i + 1];
-
-    struct Path **tmp = (struct Path **) realloc(graph->path, (graph->n_path - 1) * sizeof(struct Path *));
-
-    /* No memory available */
-    if (tmp == NULL && graph->n_path > 1)
-        exit(EXIT_FAILURE);
-
-    graph->n_path = graph->n_path - 1;
-    graph->path = tmp;
-
-    return --index;
-}
-
-struct Node *_find(struct Node *node) {
-    if (node->parent == NULL)
-        return node;
-    return _find(node->parent);
-}
-
-void _union(struct Node *n_from, struct Node *n_to) {
-
-    struct Node *x_set = _find(n_from);
-    struct Node *y_set = _find(n_to);
-
-    x_set->parent = y_set;
 }
 
 struct Graph *create_graph(int n_path, int n_node) {
@@ -317,8 +316,7 @@ struct Graph *mount_initial_graph_3(void) {
 }
 
 void print_nodes(struct Graph *graph) {
-    int i;
-    for (i = 0; i < graph->n_node; ++i) {
+    for (int i = 0; i < graph->n_node; ++i) {
         struct Node *n = graph->node[i];
         if (n->parent == NULL)
             printf("\n%s --> NULL", n->name);
@@ -329,8 +327,7 @@ void print_nodes(struct Graph *graph) {
 }
 
 void print_paths(struct Graph *graph) {
-    int i;
-    for (i = 0; i < graph->n_path; ++i) {
+    for (int i = 0; i < graph->n_path; ++i) {
         struct Path *p = graph->path[i];
         printf("\n%s --> %s = %d", p->node_a->name, p->node_b->name, p->distance);
     }
@@ -339,8 +336,7 @@ void print_paths(struct Graph *graph) {
 
 int get_path_size(struct Graph *graph) {
     int sum = 0;
-    int i;
-    for (i = 0; i < graph->n_path; ++i) {
+    for (int i = 0; i < graph->n_path; ++i) {
         sum += graph->path[i]->distance;
     }
     return sum;
