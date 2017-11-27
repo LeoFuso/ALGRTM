@@ -39,6 +39,7 @@ void _test(struct Base *(*mount)(const int *), const int *arg){
     int** k_matrix = create_table(base->n_matrix, base->n_matrix);
     _do_stuff(v_matrix,k_matrix,base);
     print_matrix(v_matrix, base->n_matrix, base->n_matrix);
+    print_matrix(k_matrix, base->n_matrix, base->n_matrix);
 
 
 }
@@ -47,10 +48,29 @@ void _do_stuff(int ** v_m, int ** k_m, struct Base * b){
     int i = 0;
     int sum = 0;
     for (int j = 0; j < b->n_matrix; ++j) {
-        if(i == j)
-            v_m[j][i] = 0;
-        else
-            v_m[j][i] = 2;
+
+        if(i != j){
+
+            int floor = 32767;
+            int result;
+            int k;
+            for (k = j; k < i; ++k) {
+                int a_1 = v_m[j][k];
+                int a_2 = v_m[k+1][i];
+                int a_3 = (b->matrix[j]->line)*(b->matrix[k]->column)*(b->matrix[i]->column);
+                /* p1 x q1 x q2 */
+                result = a_1 + a_2 + a_3;
+                if(result <= floor)
+                    floor = result;
+            }
+
+            v_m[j][i] = floor;
+
+            k_m[j][i] = k; //is this wrong?
+
+            //do_more_stuff(j, i, v_m, b);
+        }
+
         if(j == b->n_matrix-1 || i == b->n_matrix-1){
             j = -1;
             sum++;
@@ -58,8 +78,23 @@ void _do_stuff(int ** v_m, int ** k_m, struct Base * b){
         }else{
             i++;
         }
+
         if(i == b->n_matrix)
             break;
+    }
+}
+
+int do_more_stuff(int l, int c, int ** v_m, struct Base *b){
+    printf("\n%d-%d", l+1, c+1);
+
+    int floor = 0;
+    /* k = i */
+    for (int i = l; i < c; ++i) {
+        int result = 0;
+        /* p1 x q1 x q2 */
+        result = v_m[l][i] + v_m[l+1][c] + (b->matrix[l]->line)*(b->matrix[i]->column)*(b->matrix[c]->column);
+        if(result <= floor)
+            floor = result;
     }
 }
 
