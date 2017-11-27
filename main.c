@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 struct Matrix{
     int line;
@@ -18,13 +18,15 @@ void _do_stuff(int ** v_m, int ** k_m, struct Base * b);
 struct Base *create_base(int n_matrix);
 struct Matrix *create_matrix(int line, int column);
 void print_base(struct Base *base);
-void print_matrix(int **m, int n_line, int n_column);
+void print_matrix(int **m, int n_line, int n_column, int offset);
 int** create_table(int n_line, int n_column);
 
 int main(void) {
 
     printf("\n\nTEST 1: \n");
     int p[] = {4,15,5,10,20,25};
+    //int p[] = {6,2,5,2,10,2,10,2};
+
     _test(&mount_base_matrix,p);
     return 0;
 
@@ -38,8 +40,8 @@ void _test(struct Base *(*mount)(const int *), const int *arg){
     int** v_matrix = create_table(base->n_matrix, base->n_matrix);
     int** k_matrix = create_table(base->n_matrix, base->n_matrix);
     _do_stuff(v_matrix,k_matrix,base);
-    print_matrix(v_matrix, base->n_matrix, base->n_matrix);
-    print_matrix(k_matrix, base->n_matrix, base->n_matrix);
+    print_matrix(v_matrix, base->n_matrix, base->n_matrix,0);
+    print_matrix(k_matrix, base->n_matrix, base->n_matrix,1);
 
 
 }
@@ -51,10 +53,10 @@ void _do_stuff(int ** v_m, int ** k_m, struct Base * b){
 
         if(i != j){
 
-            int floor = 32767;
+            int floor = 2147483647;
+            int k_index;
             int result;
             int k;
-
             for (k = j; k < i; ++k) {
 
                 int a_1 = v_m[j][k];
@@ -66,15 +68,15 @@ void _do_stuff(int ** v_m, int ** k_m, struct Base * b){
 
                 result = a_1 + a_2 + (_m * _n * _p);
 
-                if(result <= floor)
+                if(result <= floor){
                     floor = result;
+                    k_index = k;
+                }
             }
 
             v_m[j][i] = floor;
+            k_m[j][i] = k_index;
 
-            k_m[j][i] = k; //is this wrong?
-
-            //do_more_stuff(j, i, v_m, b);
         }
 
         if(j == b->n_matrix-1 || i == b->n_matrix-1){
@@ -147,17 +149,43 @@ struct Matrix *create_matrix(int line, int column){
     return new_matrix;
 }
 
-void print_matrix(int **m, int n_line, int n_column){
+void print_matrix(int **m, int n_line, int n_column, int offset){
+
+    printf("\n");
     for (int k = 0; k < n_column; ++k) {
-            printf("%d ", k+1);
+            printf("%d    ", k+1);
     }
     printf("\n");
     printf("\n");
     for (int i = 0; i < n_column; i++) {
         for (int j = 0; j < n_line; j++) {
-            printf("%d ", m[i][j]);
+            if(i >= j){
+                if(i > j)
+                    printf("     ");
+                else
+                    printf("%d    ", 0);
+                }else{
+                int width =(int) floor(log10(abs(m[i][j]))) + 1;
+                switch(width){
+                    case(1):
+                        printf("%*d", width-10, m[i][j]+offset);
+                        break;
+                    case(2):
+                        printf("%d   ", m[i][j]+offset);
+                        break;
+                    case(3):
+                        printf("%d  ", m[i][j]+offset);
+                        break;
+                    case(4):
+                        printf("%d ", m[i][j]+offset);
+                        break;
+                    case(5):
+                        printf("%d", m[i][j]+offset);
+                        break;
+                }
+            }
         }
-        printf("  %d ", i+1);
+        printf(" | %d", i+1);
         printf("\n");
     }
 }
