@@ -54,12 +54,18 @@ void _do_stuff(int ** v_m, int ** k_m, struct Base * b){
             int floor = 32767;
             int result;
             int k;
+
             for (k = j; k < i; ++k) {
+
                 int a_1 = v_m[j][k];
                 int a_2 = v_m[k+1][i];
-                int a_3 = (b->matrix[j]->line)*(b->matrix[k]->column)*(b->matrix[i]->column);
-                /* p1 x q1 x q2 */
-                result = a_1 + a_2 + a_3;
+
+                int _m = b->matrix[j]->line;
+                int _n = b->matrix[k]->column;
+                int _p = b->matrix[i]->column;
+
+                result = a_1 + a_2 + (_m * _n * _p);
+
                 if(result <= floor)
                     floor = result;
             }
