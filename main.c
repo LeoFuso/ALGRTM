@@ -141,22 +141,23 @@ void print_matrix(int **m, int n_line, int n_column, int offset){
 
     printf("\n");
     for (int k = 0; k < n_column; ++k) {
-            printf("%d        ", k+1);
+            printf("%d         ", k+1);
     }
     printf("\n");
     printf("\n");
     for (int i = 0; i < n_column; i++) {
         for (int j = 0; j < n_line; j++) {
-            if(i >= j){
-                if(i > j)
-                    printf("         ");
-                else
-                    printf("%d        ", 0);
-                }else{
+
+            if(i > j){
+                printf("          ");
+            }else if(i == j){
+                printf("0         ");
+            }else{
                 int num = m[i][j]+offset;
                 int width =(int) floor(log10(abs(num))) + 1;
-                printf("%d%*.*s",num, 9-width,9-width," ");
+                printf("%d%*.*s",num, 10-width,10-width," ");
             }
+
         }
         printf(" | %d", i+1);
         printf("\n");
