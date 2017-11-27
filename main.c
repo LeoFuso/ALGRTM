@@ -24,8 +24,8 @@ int** create_table(int n_line, int n_column);
 int main(void) {
 
     printf("\n\nTEST 1: \n");
-    int p[] = {4,15,5,10,20,25};
-    //int p[] = {6,2,5,2,10,2,10,2};
+    //int p[] = {4,15,5,10,20,25};
+    int p[] = {6,2,5,2,10,2,10,2};
 
     _test(&mount_base_matrix,p);
     return 0;
@@ -40,7 +40,9 @@ void _test(struct Base *(*mount)(const int *), const int *arg){
     int** v_matrix = create_table(base->n_matrix, base->n_matrix);
     int** k_matrix = create_table(base->n_matrix, base->n_matrix);
     _do_stuff(v_matrix,k_matrix,base);
+    printf("VALUE MATRIX:\n");
     print_matrix(v_matrix, base->n_matrix, base->n_matrix,0);
+    printf("K-INDEX MATRIX:\n");
     print_matrix(k_matrix, base->n_matrix, base->n_matrix,1);
 
 
@@ -92,20 +94,6 @@ void _do_stuff(int ** v_m, int ** k_m, struct Base * b){
     }
 }
 
-int do_more_stuff(int l, int c, int ** v_m, struct Base *b){
-    printf("\n%d-%d", l+1, c+1);
-
-    int floor = 0;
-    /* k = i */
-    for (int i = l; i < c; ++i) {
-        int result = 0;
-        /* p1 x q1 x q2 */
-        result = v_m[l][i] + v_m[l+1][c] + (b->matrix[l]->line)*(b->matrix[i]->column)*(b->matrix[c]->column);
-        if(result <= floor)
-            floor = result;
-    }
-}
-
 int** create_table(int n_line, int n_column){
 
     // allocate Rows rows, each row is a pointer to int
@@ -153,7 +141,7 @@ void print_matrix(int **m, int n_line, int n_column, int offset){
 
     printf("\n");
     for (int k = 0; k < n_column; ++k) {
-            printf("%d    ", k+1);
+            printf("%d        ", k+1);
     }
     printf("\n");
     printf("\n");
@@ -161,34 +149,20 @@ void print_matrix(int **m, int n_line, int n_column, int offset){
         for (int j = 0; j < n_line; j++) {
             if(i >= j){
                 if(i > j)
-                    printf("     ");
+                    printf("         ");
                 else
-                    printf("%d    ", 0);
+                    printf("%d        ", 0);
                 }else{
-                int width =(int) floor(log10(abs(m[i][j]))) + 1;
-                switch(width){
-                    case(1):
-                        printf("%*d", width-10, m[i][j]+offset);
-                        break;
-                    case(2):
-                        printf("%d   ", m[i][j]+offset);
-                        break;
-                    case(3):
-                        printf("%d  ", m[i][j]+offset);
-                        break;
-                    case(4):
-                        printf("%d ", m[i][j]+offset);
-                        break;
-                    case(5):
-                        printf("%d", m[i][j]+offset);
-                        break;
-                }
+                int num = m[i][j]+offset;
+                int width =(int) floor(log10(abs(num))) + 1;
+                printf("%d%*.*s",num, 9-width,9-width," ");
             }
         }
         printf(" | %d", i+1);
         printf("\n");
     }
 }
+
 void print_base(struct Base *base){
 
     struct Matrix *m = NULL;
