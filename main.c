@@ -38,7 +38,7 @@ void _fill_table(int **v_m, int **k_m, struct Base *b) {
 
     int j = 0;
     int offset = 0;
-    int floor_value;
+    double floor_value;
     int _k_value = 0;
     int result;
     int k;
@@ -66,7 +66,7 @@ void _fill_table(int **v_m, int **k_m, struct Base *b) {
                 }
             }
 
-            v_m[i][j] = floor_value;
+            v_m[i][j] = (int)floor_value;
             k_m[i][j] = _k_value;
 
         }
