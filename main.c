@@ -35,47 +35,49 @@ int main(void) {
 }
 
 void _fill_table(int **v_m, int **k_m, struct Base *b) {
-    int i = 0;
-    int sum = 0;
-    for (int j = 0; j < b->n_matrix; ++j) {
 
-        if (i != j) {
+    int j = 0;
+    int offset = 0;
+    int floor_value;
+    int _k_value = 0;
+    int result;
+    int k;
 
-            int floor = INFINITY;
-            int k_index;
-            int result;
-            int k;
-            for (k = j; k < i; ++k) {
+    for (int i = 0; i < b->n_matrix; ++i) {
 
-                int a_1 = v_m[j][k];
-                int a_2 = v_m[k + 1][i];
+        if (j != i) {
 
-                int _m = b->matrix[j]->line;
+            floor_value = INFINITY;
+
+            for (k = i; k < j; ++k) {
+
+                int a_1 = v_m[i][k];
+                int a_2 = v_m[k + 1][j];
+
+                int _m = b->matrix[i]->line;
                 int _n = b->matrix[k]->column;
-                int _p = b->matrix[i]->column;
+                int _p = b->matrix[j]->column;
 
                 result = a_1 + a_2 + (_m * _n * _p);
 
-                if (result <= floor) {
-                    floor = result;
-                    k_index = k;
+                if (result <= floor_value) {
+                    floor_value = result;
+                    _k_value = k;
                 }
             }
 
-            v_m[j][i] = floor;
-            k_m[j][i] = k_index;
+            v_m[i][j] = floor_value;
+            k_m[i][j] = _k_value;
 
         }
 
-        if (j == b->n_matrix - 1 || i == b->n_matrix - 1) {
-            j = -1;
-            sum++;
-            i = sum;
-        } else {
-            i++;
-        }
+        if (i == b->n_matrix - 1 || j == b->n_matrix - 1) {
+            i = -1;
+            j = ++offset;
+        }else
+            j++;
 
-        if (i == b->n_matrix)
+        if (j == b->n_matrix)
             break;
     }
 }
