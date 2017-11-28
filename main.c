@@ -150,6 +150,9 @@ struct Matrix *create_matrix(unsigned int line, unsigned int column) {
 
 void print_matrix(unsigned int **m, unsigned int n_line, unsigned int n_column, unsigned int offset) {
 
+    unsigned int num;
+    unsigned int width;
+
     printf("\n");
     for (unsigned int k = 0; k < n_column; ++k) {
         printf("%d         ", k + 1);
@@ -159,14 +162,14 @@ void print_matrix(unsigned int **m, unsigned int n_line, unsigned int n_column, 
     for (unsigned int i = 0; i < n_column; i++) {
         for (unsigned int j = 0; j < n_line; j++) {
 
-            if (i > j) {
+            if (i > j)
                 printf("          ");
-            } else if (i == j) {
+            else if (i == j)
                 printf("0         ");
-            } else {
-                unsigned int num = m[i][j] + offset;
-                unsigned int width = (unsigned int) floor(log10(abs(num))) + 1;
-                printf("%d%*.*s", num, 10 - width, 10 - width, " ");
+            else {
+                num = m[i][j] + offset;
+                width = 10 - ((unsigned int) floor(log10(abs(num))) + 1);
+                printf("%d%*.*s", num, width,width, " ");
             }
 
         }
