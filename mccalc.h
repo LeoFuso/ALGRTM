@@ -12,3 +12,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <math.h>
+
+
+uint64_t ** mccalc(const uint64_t *p, size_t size);

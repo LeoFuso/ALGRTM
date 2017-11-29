@@ -8,6 +8,9 @@
 
 #include "mccalc.h"
 
+struct _base * _cbase(const uint64_t *p,size_t size);
+uint64_t **_cstorage(size_t size);
+void _run(uint64_t **storage, struct _base *base);
 
 struct _matrix
 {
@@ -20,6 +23,15 @@ struct _base
     size_t n_matrix;
     struct _matrix **matrix;
 };
+
+uint64_t ** mccalc(const uint64_t *p, size_t size)
+{
+    struct _base * base = _cbase(p, size);
+    uint64_t ** storage = _cstorage(size);
+    _run(storage,base);
+
+    return storage;
+}
 
 void _run(uint64_t **storage, struct _base *base)
 {
