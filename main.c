@@ -1,50 +1,52 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdint.h>
 
 struct Matrix {
-    unsigned int line;
-    unsigned int column;
+    uint64_t line;
+    uint64_t column;
 };
 
 struct Base {
-    unsigned int n_matrix;
+    size_t n_matrix;
     struct Matrix **matrix;
 };
 
-struct Base *mount_base_matrix(const unsigned int *);
-struct Base *create_base(unsigned int n_matrix);
-struct Matrix *create_matrix(unsigned int line, unsigned int column);
+struct Base *mount_base_matrix(const uint64_t *p, size_t size);
+struct Base *create_base(size_t n_matrix);
+struct Matrix *create_matrix(uint64_t line, uint64_t column);
 void print_base(struct Base *base);
-void print_matrix(unsigned int **m, unsigned int n_line, unsigned int n_column, unsigned int offset);
-unsigned int **create_table(unsigned int n_line, unsigned int n_column);
+void print_matrix(uint64_t **m, uint64_t n_line, uint64_t n_column, uint64_t offset);
+void print_matrix_2(uint64_t **m, uint64_t n_line, uint64_t n_column, uint64_t offset);
+uint64_t **create_table(uint64_t n_line, uint64_t n_column);
 
 /* logic */
-void _test(struct Base *(*mount)(const unsigned int *), const unsigned int *);
-void _fill_table(unsigned int **v_m, unsigned int **k_m, struct Base *b);
+void _test(struct Base *(*mount)(const uint64_t *, size_t size), const uint64_t *arg, size_t size);
+void _fill_table(uint64_t **v_m, uint64_t **k_m, struct Base *b);
 
 int main(void) {
 
     printf("\n\nTEST 1: \n");
-    //unsigned int p[] = {4,15,5,10,20,25};
-    unsigned int p[] = {6, 2, 5, 2, 10, 2, 10, 2};
+    //uint64_t p[] = {4,15,5,10,20,25};
+    uint64_t p[] = {2, 5, 2, 10, 2, 10, 2};
 
-    _test(&mount_base_matrix, p);
+    _test(&mount_base_matrix, p, 6);
     return 0;
 
 }
 
-void _fill_table(unsigned int **v_m, unsigned int **k_m, struct Base *b) {
+void _fill_table(uint64_t **v_m, uint64_t **k_m, struct Base *b) {
 
 
-    unsigned int offset = 0;
+    uint64_t offset = 0;
     double floor_value;
-    unsigned int _k_value = 0;
-    unsigned int result;
-    unsigned int k;
+    uint64_t _k_value = 0;
+    uint64_t result;
+    uint64_t k;
 
-    unsigned int j = 0;
-    unsigned int i = 0;
+    uint64_t j = 0;
+    uint64_t i = 0;
 
     while(i < b->n_matrix){
 
@@ -55,12 +57,12 @@ void _fill_table(unsigned int **v_m, unsigned int **k_m, struct Base *b) {
 
             for (k = i; k < j; ++k) {
 
-                unsigned int a_1 = v_m[i][k];
-                unsigned int a_2 = v_m[k + 1][j];
+                uint64_t a_1 = v_m[i][k];
+                uint64_t a_2 = v_m[k + 1][j];
 
-                unsigned int _m = b->matrix[i]->line;
-                unsigned int _n = b->matrix[k]->column;
-                unsigned int _p = b->matrix[j]->column;
+                uint64_t _m = b->matrix[i]->line;
+                uint64_t _n = b->matrix[k]->column;
+                uint64_t _p = b->matrix[j]->column;
 
                 result = a_1 + a_2 + (_m * _n * _p);
 
@@ -70,8 +72,10 @@ void _fill_table(unsigned int **v_m, unsigned int **k_m, struct Base *b) {
                 }
             }
 
-            v_m[i][j] = (unsigned int)floor_value;
+            v_m[i][j] = (uint64_t)floor_value;
+            v_m[(b->n_matrix-1) - i][(b->n_matrix-1) - j] = _k_value+1;
             k_m[i][j] = _k_value;
+
 
         }
 
@@ -89,45 +93,45 @@ void _fill_table(unsigned int **v_m, unsigned int **k_m, struct Base *b) {
     }
 }
 
-void _test(struct Base *(*mount)(const unsigned int *), const unsigned int *arg) {
+void _test(struct Base *(*mount)(const uint64_t *, size_t size), const uint64_t *arg, size_t size) {
 
-    struct Base *base = mount(arg);
+    struct Base *base = mount(arg, size);
     print_base(base);
 
-    unsigned int **v_matrix = create_table(base->n_matrix, base->n_matrix);
-    unsigned int **k_matrix = create_table(base->n_matrix, base->n_matrix);
+    uint64_t **v_matrix = create_table(base->n_matrix, base->n_matrix);
+    uint64_t **k_matrix = create_table(base->n_matrix, base->n_matrix);
     _fill_table(v_matrix, k_matrix, base);
     printf("VALUE MATRIX:\n");
-    print_matrix(v_matrix, base->n_matrix, base->n_matrix, 0);
+    print_matrix_2(v_matrix, base->n_matrix, base->n_matrix, 0);
     printf("K-INDEX MATRIX:\n");
     print_matrix(k_matrix, base->n_matrix, base->n_matrix, 1);
 
 
 }
 
-unsigned int **create_table(unsigned int n_line, unsigned int n_column) {
+uint64_t **create_table(uint64_t n_line, uint64_t n_column) {
 
-    // allocate Rows rows, each row is a pointer to unsigned int
-    unsigned int **table = (unsigned int **) malloc(n_line * sizeof(unsigned int *));
+    // allocate Rows rows, each row is a pointer to uint64_t
+    uint64_t **table = (uint64_t **) malloc(n_line * sizeof(uint64_t *));
 
     // for each row allocate Cols ints
-    for (unsigned int row = 0; row < n_line; row++)
-        table[row] = (unsigned int *) malloc(n_column * sizeof(unsigned int));
+    for (uint64_t row = 0; row < n_line; row++)
+        table[row] = (uint64_t *) malloc(n_column * sizeof(uint64_t));
 
     return table;
 }
 
-struct Base *mount_base_matrix(const unsigned int *p) {
+struct Base *mount_base_matrix(const uint64_t *p, size_t size) {
 
-    unsigned int n_matrix = p[0];
+    size_t n_matrix = size;
 
     struct Base *base = create_base(n_matrix);
-    for (unsigned int i = 1; i < base->n_matrix + 1; ++i)
-        base->matrix[i - 1] = create_matrix(p[i], p[i + 1]);
+    for (uint64_t i = 0; i < base->n_matrix; ++i)
+        base->matrix[i] = create_matrix(p[i], p[i + 1]);
     return base;
 }
 
-struct Base *create_base(unsigned int n_matrix) {
+struct Base *create_base(size_t n_matrix) {
 
     struct Base *base =
             (struct Base *) malloc(sizeof(struct Base));
@@ -137,7 +141,7 @@ struct Base *create_base(unsigned int n_matrix) {
     return base;
 }
 
-struct Matrix *create_matrix(unsigned int line, unsigned int column) {
+struct Matrix *create_matrix(uint64_t line, uint64_t column) {
 
     struct Matrix *new_matrix = NULL;
 
@@ -148,19 +152,19 @@ struct Matrix *create_matrix(unsigned int line, unsigned int column) {
     return new_matrix;
 }
 
-void print_matrix(unsigned int **m, unsigned int n_line, unsigned int n_column, unsigned int offset) {
+void print_matrix(uint64_t **m, uint64_t n_line, uint64_t n_column, uint64_t offset) {
 
-    unsigned int num;
-    unsigned int width;
+    uint64_t num;
+    uint64_t width;
 
     printf("\n");
-    for (unsigned int k = 0; k < n_column; ++k) {
+    for (uint64_t k = 0; k < n_column; ++k) {
         printf("%d         ", k + 1);
     }
     printf("\n");
     printf("\n");
-    for (unsigned int i = 0; i < n_column; i++) {
-        for (unsigned int j = 0; j < n_line; j++) {
+    for (uint64_t i = 0; i < n_column; i++) {
+        for (uint64_t j = 0; j < n_line; j++) {
 
             if (i > j)
                 printf("          ");
@@ -168,7 +172,7 @@ void print_matrix(unsigned int **m, unsigned int n_line, unsigned int n_column, 
                 printf("0         ");
             else {
                 num = m[i][j] + offset;
-                width = 10 - ((unsigned int) floor(log10(abs(num))) + 1);
+                width = 10 - ((uint64_t) floor(log10(abs(num))) + 1);
                 printf("%d%*.*s", num, width,width, " ");
             }
 
@@ -178,12 +182,34 @@ void print_matrix(unsigned int **m, unsigned int n_line, unsigned int n_column, 
     }
 }
 
+void print_matrix_2(uint64_t **m, uint64_t n_line, uint64_t n_column, uint64_t offset) {
+
+    uint64_t num;
+    uint64_t width;
+
+    printf("\n");
+    for (uint64_t k = 0; k < n_column; ++k) {
+        printf("%d         ", k + 1);
+    }
+    printf("\n");
+    printf("\n");
+    for (uint64_t i = 0; i < n_column; i++) {
+        for (uint64_t j = 0; j < n_line; j++) {
+            num = m[i][j] + offset;
+            width = 10 - ((uint64_t) floor(log10(abs(num))) + 1);
+            printf("%d%*.*s", num, width, width, " ");
+        }
+        printf(" | %d", i + 1);
+        printf("\n");
+    }
+}
+
 void print_base(struct Base *base) {
 
     struct Matrix *m = NULL;
-    for (unsigned int i = 0; i < base->n_matrix; ++i) {
+    for (size_t i = 0; i < base->n_matrix; ++i) {
         m = base->matrix[i];
-        printf("\nA%d: %d x %d", i + 1, m->line, m->column);
+        printf("\nA%d: %d x %d", (uint64_t)i + 1, m->line, m->column);
     }
     m = NULL;
 
