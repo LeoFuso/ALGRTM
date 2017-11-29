@@ -54,7 +54,7 @@ void _run(uint64_t **storage, struct _base *base)
             for (k = i; k < j; ++k)
             {
                 uint64_t a_1 = storage[i][k];
-                uint64_t a_2 = storage[++k][j];
+                uint64_t a_2 = storage[k+1][j];
 
                 uint64_t _m = base->matrix[i]->line;
                 uint64_t _n = base->matrix[k]->column;
@@ -102,7 +102,7 @@ struct _base * _cbase(const uint64_t *p,size_t size)
     base->matrix = (struct _matrix **) malloc(size * sizeof(struct _matrix));
 
     for (uint64_t i = 0; i < base->n_matrix; ++i)
-        base->matrix[i] = _cmatrix(p[i], p[++i]);
+        base->matrix[i] = _cmatrix(p[i], p[i+1]);
 
     return base;
 }
