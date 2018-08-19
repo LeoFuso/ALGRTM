@@ -188,7 +188,10 @@ populate(FILE *filePointer, unsigned int n_lines)
 void
 quick_sort(struct Lista *lista)
 {
-	qsort((void *) lista->pessoas, lista->tamanho, sizeof(struct Pessoa*), comparator);
+    /* unwrap for quick sort */
+    struct Pessoa ** pessoas = lista->pessoas;
+    unsigned int size = lista->tamanho;
+	qsort(pessoas, size, sizeof(pessoas[0]), comparator);
 }
 
 void
@@ -207,15 +210,12 @@ print_list(struct Lista *lista)
 int
 comparator(const void *p1, const void *p2)
 {
-	struct Pessoa * pessoa1 = (struct Pessoa *) p1;
-	struct Pessoa * pessoa2 = (struct Pessoa *) p2;
+	struct Pessoa * o1 = *(struct Pessoa **) p1;
+	struct Pessoa * o2 = *(struct Pessoa **) p2;
 
-	double h1 = pessoa1->height;
-	double h2 = pessoa2->height;
-
-	if (h1 > h2)
+	if (o1->height > o2->height)
 		return 1;
-	else if (h1 < h2)
+	else if (o1->height  < o2->height)
 		return -1;
 	else
 		return 0;
