@@ -1,2 +1,12 @@
-# ALGRTM
-Repo for various types of algorithms that I find worth keeping it
+# QUICK SORT
+
+CMake pode ser utilizado para compilar este programa.
+
+``` bash
+$ mkdir bin
+$ cd bin
+$ cmake ..
+$ make
+$ main ../pessoas.txt
+```
+
