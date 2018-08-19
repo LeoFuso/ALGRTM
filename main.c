@@ -55,7 +55,7 @@ main(int argc, char *argv[])
 
 	if (filePointer == NULL)
 	{
-		printf("Unexpected behavior: main.c 34 - Closing...");
+		printf("Unexpected behavior: main.c 54 - Closing...");
 		exit(1);
 	}
 	else
@@ -167,7 +167,7 @@ populate(FILE *filePointer, unsigned int n_lines)
 				break;
 			case 2: pessoa->height = (double) strtod(raw_line, (char **) NULL);
 				break;
-			default: printf("Unexpected behavior: main.c 152 - Closing...");
+			default: printf("Unexpected behavior: main.c 170 - Closing...");
 				exit(1);
 		}
 
@@ -188,10 +188,7 @@ populate(FILE *filePointer, unsigned int n_lines)
 void
 quick_sort(struct Lista *lista)
 {
-    /* unwrap for quick sort */
-    struct Pessoa ** pessoas = lista->pessoas;
-    unsigned int size = lista->tamanho;
-	qsort(pessoas, size, sizeof(pessoas[0]), comparator);
+	qsort(lista->pessoas, lista->tamanho, sizeof(lista->pessoas[0]), comparator);
 }
 
 void
